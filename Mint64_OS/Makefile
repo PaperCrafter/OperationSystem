@@ -28,11 +28,22 @@ Disk.img: BootLoader Kernel32
 	@echo =========== Disk Image Build Start ===========
 	@echo 
 
-	cat 00.BootLoader/BootLoader.bin 01.Kernel32/VirtualOS.bin > Disk.img
+	cat 00.BootLoader/BootLoader.bin 00.BootLoader/BootLoader2.bin 01.Kernel32/VirtualOS.bin > Disk.img
 
 	@echo 
 	@echo ============= All Build Complete =============
 	@echo 
+
+BootLoader.img: BootLoader
+	@echo
+	@echo =========== Building BootLoader Image ========
+	@echo
+	
+	
+	
+	@echo
+	@echo =========== BootLoader Image Building complete =====
+	@echo
 
 run:
 	qemu-system-x86_64 -L . -fda Disk.img -m 64 -localtime -M pc
@@ -40,4 +51,5 @@ run:
 clean:
 	make -C 00.BootLoader clean
 	make -C 01.Kernel32 clean
-	rm -f Disk.img	
+	rm -f Disk.img
+	rm -f BootLoader.img	
