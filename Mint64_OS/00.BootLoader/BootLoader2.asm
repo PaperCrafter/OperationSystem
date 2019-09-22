@@ -11,86 +11,14 @@ TOTALSECTORCOUNT:	dw 1024
 START:
 	mov ax, cs
 	mov ds, ax
-	mov ax, 0xB800
-	mov es, ax
-
-	;// stack create
-	mov ax, 0x0000
-	mov ss, ax
-	mov sp, 0xFFFE
-	mov bp, 0xFFFE
-
 	mov si, 0
 
-;// MESSAGE CLEAR ==================================================
-.SCREENCLEARLOOP:
-	mov byte [ es: si ], 0
-	mov byte [ es: si + 1 ], 0x0F
-
-	add si, 2
-
-	cmp si, 80 * 25 * 2
-	jl .SCREENCLEARLOOP
-
-
-;// PRINT HELLO MESSAGE ==================================================
-
-	push MESSAGE1
-	push 0
-	push 0
-	call PRINTMESSAGE
-	add	sp, 6
-
 ;// HW1 =========
-
+;day interrup you should add code in here
 	mov ah, 0x04
 	int 0x1A
 
-	;month
-	MOV BH, DH
-	SHR BH, 4
-	ADD BH, 30H
-	MOV [DATE+14], BH
-	MOV BH, DH
-	AND BH, 0FH
-	ADD BH, 30H
-	MOV [DATE+15], BH
 
-	;day
-	MOV BH, DL
-	SHR BH, 4
-	ADD BH, 30H
-	MOV [DATE+17], BH
-	MOV BH, DL
-	AND BH, 0FH
-	ADD BH, 30H
-	MOV [DATE+18], BH
-
-	;century
-	MOV BH, CH
-	SHR BH, 4
-	ADD BH, 30H
-	MOV [DATE+20], BH
-	MOV BH, CH
-	AND BH, 0FH
-	ADD BH, 30H
-	MOV [DATE+21], BH
-
-	;year
-	MOV BH, CL
-	SHR BH, 4
-	ADD BH, 30H
-	MOV [DATE+22], BH
-	MOV BH, CL
-	AND BH, 0FH
-	ADD BH, 30H
-	MOV [DATE+23], BH
-
-	push DATE
-	push 1
-	push 0
-	call PRINTMESSAGE
-	add sp, 6
 
 ;// PRINT OS LOAD MESSAGE ==================================================
 	push IMAGELOADINGMESSAGE
@@ -217,8 +145,6 @@ PRINTMESSAGE:
 	ret
 
 ;// DATA ==================================================
-MESSAGE1:	db 'OS 64BIT Boot Loader2 Start.', 0
-
 DATE: db 'Current Data: 00/00/0000', 0
 
 DISKERRORMESSAGE:	db	'! DISK Error !', 0
