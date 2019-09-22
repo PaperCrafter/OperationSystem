@@ -15,8 +15,6 @@ START:
 
 ;// HW1 =========
 ;day interrup you should add code in here
-;	mov ah, 0x04
-;	int 0x1A
 
 call JELLER
 
@@ -286,7 +284,7 @@ DAYMESSAGE: db 'Day', 0
 
 DISKERRORMESSAGE:	db	'', 0
 IMAGELOADINGMESSAGE:	db	'', 0
-LOADINGCOMPLETEMESSAGE: db	'', 0
+LOADINGCOMPLETEMESSAGE: db	'[ Complete ]', 0
 
 	;// disk read variables
 SECTORNUMBER:	db	0x03

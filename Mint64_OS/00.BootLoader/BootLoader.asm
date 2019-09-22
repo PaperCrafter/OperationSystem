@@ -114,9 +114,6 @@ RESETDISK:
 
 ;// READ DATA ==================================================
 READDATA:
-	cmp di, 0
-	je READEND
-	sub di, 0x1
 
 	;//BIOS READ Function
 	mov ah, 0x02
@@ -127,32 +124,6 @@ READDATA:
 	mov dl, 0x00
 	int 0x13
 	jc HANDLEDISKERROR
-
-	add si, 0x0020
-	mov es, si
-
-	mov al, byte [ SECTORNUMBER ]
-	add al, 0x01
-	mov byte [ SECTORNUMBER ], al
-	cmp al, 19
-	jl READDATA
-
-	xor byte [ HEADNUMBER ], 0x01
-	mov byte [ SECTORNUMBER ], 0x01
-
-	cmp byte [ HEADNUMBER ], 0x00
-	jne READDATA
-
-	add byte [ TRACKNUMBER ], 0x01
-	jmp READDATA
-
-READEND:
-	;// print message
-	push LOADINGCOMPLETEMESSAGE
-	push 2
-	push 30
-	call PRINTMESSAGE
-	add	sp, 6
 
 	jmp 0x1000:0x0000
 
@@ -222,7 +193,6 @@ DATE: db 'Current Data: 00/00/0000', 0
 
 DISKERRORMESSAGE:	db	'! DISK Error !', 0
 IMAGELOADINGMESSAGE:	db	'---OS Image Loading---', 0
-LOADINGCOMPLETEMESSAGE: db	'[ Complete ]', 0
 
 	;// disk read variables
 SECTORNUMBER:	db	0x02
