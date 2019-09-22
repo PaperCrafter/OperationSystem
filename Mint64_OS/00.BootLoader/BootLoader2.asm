@@ -19,7 +19,6 @@ START:
 	int 0x1A
 
 
-
 ;// PRINT OS LOAD MESSAGE ==================================================
 	push IMAGELOADINGMESSAGE
 	push 2
