@@ -39,7 +39,7 @@ RESETDISK:
 	jc HANDLEDISKERROR
 
 	;// READ SECTOR
-	mov si, 0x2000
+	mov si, 0x1100
 	mov es, si
 	mov bx, 0x0000
 
@@ -87,7 +87,7 @@ READEND:
 	call PRINTMESSAGE
 	add	sp, 6
 
-	jmp 0x2000:0x0000
+	jmp 0x1100:0x0000
 
 
 ;// FUNCTION ==================================================
