@@ -25,7 +25,7 @@ mov cr0, eax
 
 ;
 ;
-jmp dword 0x08: (PROTECTEDMODE -$$ + 0X11000)
+jmp dword 0x08: (PROTECTEDMODE -$$ + 0x11000)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
@@ -46,13 +46,13 @@ PROTECTEDMODE:
     mov ebp, 0xFFFE
 
     ;
-    push (SWITCHSUCCESSMESSAGE - $$ + 0X11000)
+    push (SWITCHSUCCESSMESSAGE - $$ + 0x11000)
     push 3
     push 0
     call PRINTMESSAGE
     add esp, 12
 
-    jmp $
+    jmp dword 0x08:0x11200
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
@@ -118,7 +118,7 @@ align 8, db 0
 ;GDTR
 GDTR:
     dw GDTEND - GDT -1
-    dd (GDT -$$ + 0X11000)
+    dd (GDT -$$ + 0x11000)
 
 GDT:
     NULLDescriptor:
