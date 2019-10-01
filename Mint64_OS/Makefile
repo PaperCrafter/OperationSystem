@@ -6,7 +6,7 @@ BootLoader:
 	@echo 
 	
 	make -C 00.BootLoader
-
+	
 	@echo 
 	@echo =============== Build Complete ===============
 	@echo 
@@ -27,9 +27,9 @@ Disk.img: 00.BootLoader/BootLoader.bin 00.BootLoader/BootLoader2.bin 01.Kernel32
 	@echo 
 	@echo =========== Disk Image Build Start ===========
 	@echo 
-
+	
 	./ImageMaker.exe $^
-
+	
 	@echo 
 	@echo ============= All Build Complete =============
 	@echo 
@@ -42,4 +42,3 @@ clean:
 	make -C 00.BootLoader clean
 	make -C 01.Kernel32 clean
 	rm -f Disk.img
-	rm -f BootLoader.img	
