@@ -1,4 +1,4 @@
-all: BootLoader Disk.img
+all: BootLoader Kernel32 Disk.img
 
 BootLoader:
 	@echo 
@@ -20,10 +20,9 @@ Kernel32:
 	
 	@echo
 	@echo =============== Build Complete ===============
-	@echo	
+	@echo
 	
-	
-Disk.img: 00.BootLoader/BootLoader.bin 00.BootLoader/BootLoader2.bin 01.Kernel32/Kernel32.bin
+Disk.img: 00.BootLoader/BootLoader.bin 01.Kernel32/Kernel32.bin
 	@echo 
 	@echo =========== Disk Image Build Start ===========
 	@echo 

@@ -46,16 +46,11 @@ PROTECTEDMODE:
     mov ebp, 0xFFFE
 
     ;과제 1. RAM 크기 출력
-    int 15h
-
-
     push (RAMSIZEMESSAGE - $$ + 0x11000)
     push 3
     push 0
     call PRINTMESSAGE
-    add esp, 12
-
-    
+    add esp, 12 
 
     ;
     push (SWITCHSUCCESSMESSAGE - $$ + 0x11000)
