@@ -8,40 +8,39 @@ BOOL kIsMemoryEnough( void );
 
 //Main function
 void Main(void){
+	
+	kPrintString( 0, 5, "C Language Kernel Start.....................[Pass]" );
 
-	DWORD i;
+	    //check minimum memory size
 
-	kPrintString( 0, 5, "C Language Kernel Start = [Pass]" );
+		kPrintString( 0, 6, "Minimum Memory Size Check...................[    ]" );
+	        if( kIsMemoryEnough() == FALSE )
+	        {
+	            kPrintString( 45, 6, "Fail" );
+	            kPrintString( 0, 7, "Not Enough Memory~!! MINT64 OS Requires Over "
+	                    "64Mbyte Memory~!!" );
+	            while( 1 ) ;
+	        }
+	        else
+	        {
+	            kPrintString( 45, 6, "Pass" );
+	        }
 
-    //check minimum memory size
+	    //initialization
+	    kPrintString( 0, 7, "IA-32e Kernel Area Initialize...............[    ]" );
+	    if( kInitializeKernel64Area() == FALSE )
+	    {
+	    	kPrintString( 45, 7, "Fail" );
+	    	kPrintString( 0, 8, "Kernel Area Initialization Fail~!!" );
+	    	while( 1 ) ;
+	    }
+	    kPrintString( 45, 7, "Pass" );
 
-	kPrintString( 0, 6, "Minimum Memory Size Check=[    ]" );
-        if( kIsMemoryEnough() == FALSE )
-        {
-            kPrintString( 26, 6, "Fail" );
-            kPrintString( 0, 7, "Not Enough Memory~!! MINT64 OS Requires Over "
-                    "64Mbyte Memory~!!" );
-            while( 1 ) ;
-        }
-        else
-        {
-            kPrintString( 26, 6, "Pass" );
-        }
-
-    //initialization
-    kPrintString( 0, 7, "IA-32e Kernel Area Initialize = [    ]" );
-    if( kInitializeKernel64Area() == FALSE )
-    {
-    	kPrintString( 33, 7, "Fail" );
-    	kPrintString( 0, 8, "Kernel Area Initialization Fail~!!" );
-    	while( 1 ) ;
-    }
-    kPrintString( 33, 7, "Pass" );
 
     while(1);    
 }
 
-//function printing string
+//functin printing string
 void kPrintString(int iX, int iY, const char* pcString){
     CHARACTER* pstScreen = (CHARACTER*) 0xB8000;
     int i;
@@ -92,5 +91,4 @@ BOOL kIsMemoryEnough( void )
     }
     return TRUE;
 }
-
 

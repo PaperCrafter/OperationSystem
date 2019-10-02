@@ -13,8 +13,58 @@ START:
 	mov ds, ax
 	mov si, 0
 
+
+
 ;// HW1 =========
-;day interrup you should add code in here
+
+	mov ah, 0x04
+	int 0x1A
+
+	;month
+	MOV BH, DH
+	SHR BH, 4
+	ADD BH, 30H
+	MOV [DATE+14], BH
+	MOV BH, DH
+	AND BH, 0FH
+	ADD BH, 30H
+	MOV [DATE+15], BH
+
+	;day
+	MOV BH, DL
+	SHR BH, 4
+	ADD BH, 30H
+	MOV [DATE+17], BH
+	MOV BH, DL
+	AND BH, 0FH
+	ADD BH, 30H
+	MOV [DATE+18], BH
+
+	;century
+	MOV BH, CH
+	SHR BH, 4
+	ADD BH, 30H
+	MOV [DATE+20], BH
+	MOV BH, CH
+	AND BH, 0FH
+	ADD BH, 30H
+	MOV [DATE+21], BH
+
+	;year
+	MOV BH, CL
+	SHR BH, 4
+	ADD BH, 30H
+	MOV [DATE+22], BH
+	MOV BH, CL
+	AND BH, 0FH
+	ADD BH, 30H
+	MOV [DATE+23], BH
+
+	push DATE
+	push 1
+	push 0
+	call PRINTMESSAGE
+	add sp, 6
 
 call JELLER
 
@@ -30,6 +80,7 @@ add sp, 6
 	push 0
 	call PRINTMESSAGE
 	add sp, 6
+
 
 ;// RESET DISK ==================================================
 RESETDISK:
@@ -53,7 +104,7 @@ READDATA:
 
 	;//BIOS READ Function
 	mov ah, 0x02
-	mov al, 0x1
+	mov al, 0x02
 	mov ch, byte [ TRACKNUMBER ]
 	mov cl, byte [ SECTORNUMBER ]
 	mov dh, byte [ HEADNUMBER ]
@@ -79,6 +130,7 @@ READDATA:
 	add byte [ TRACKNUMBER ], 0x01
 	jmp READDATA
 
+
 READEND:
 	;// print message
 	push LOADINGCOMPLETEMESSAGE
@@ -87,10 +139,38 @@ READEND:
 	call PRINTMESSAGE
 	add	sp, 6
 
+	;//과제 2-1. RAM 크기 출력
+	mov eax, 0E820h
+	mov edx, 534d4150h
+    int 15h
+
+	mov eax, DWORD[length]
+	mov edx, DWORD[type]
+	and dx, 01h
+	dec edx
+	not edx
+	and eax, edx
+	add ebp, eax
+    MOV [RAMSIZEMESSAGE+10], ecx
+
+	push RAMSIZEMESSAGE
+	push 3
+	push 0
+	call PRINTMESSAGE
+	add	sp, 6
+
 	jmp 0x1100:0x0000
 
 
 ;// FUNCTION ==================================================
+HANDLEDISKERROR:
+	push DISKERRORMESSAGE
+	push 2
+	push 20
+	call PRINTMESSAGE
+
+	jmp $
+
 JELLER:
 cmp byte[MONTH], 0x01
 je  .MONTH13
@@ -216,14 +296,6 @@ sub byte[YEAR], 0x01
 jmp .START
 
 
-HANDLEDISKERROR:
-	push DISKERRORMESSAGE
-	push 2
-	push 20
-	call PRINTMESSAGE
-
-	jmp $
-
 PRINTMESSAGE:
 	push bp
 	mov bp, sp
@@ -281,17 +353,26 @@ DAY: db 0x16
 CEN: db 0x14
 
 DAYMESSAGE: db 'Day', 0
-
-DISKERRORMESSAGE:	db	'', 0
-IMAGELOADINGMESSAGE:	db	'', 0
+IMAGELOADINGMESSAGE:	db	'---OS Image Loading---', 0
 LOADINGCOMPLETEMESSAGE: db	'[ Complete ]', 0
+DISKERRORMESSAGE:	db	'! DISK Error !', 0
+RAMSIZEMESSAGE:	db	'RAM Size: XX MB', 0
+strNL: db 0
+
+DATE: db 'Current Data: 00/00/0000', 0
+
+;Memory Descriptor returned by int 15
+basesAddress dq 0
+length dq 0
+type dd 0
+extAttr dd 0
 
 	;// disk read variables
-SECTORNUMBER:	db	0x03
+SECTORNUMBER:	db	0x05
 HEADNUMBER:	db	0x00
 TRACKNUMBER:	db	0x00
 
-times 510 - ( $ - $$)	db 0x00
+times 1534 - ( $ - $$)	db 0x00
 
 db 0x55
 db 0xAA

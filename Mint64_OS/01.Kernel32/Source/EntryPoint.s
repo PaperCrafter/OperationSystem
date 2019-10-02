@@ -11,7 +11,9 @@ START:
     mov ds, ax
     mov es, ax
 
-    ; BIOS A20 Activate
+    cli
+    lgdt[GDTR]
+; BIOS A20 Activate
 	mov ax, 0x2401
     int 0x15
 
@@ -37,6 +39,8 @@ START:
 mov eax, 0x4000003B
 mov cr0, eax
 
+;
+;
 jmp dword 0x08: (PROTECTEDMODE -$$ + 0x11000)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -56,21 +60,12 @@ PROTECTEDMODE:
     mov ss, ax
     mov esp, 0xFFFE
     mov ebp, 0xFFFE
-
-    ;과제 1. RAM 크기 출력
-    push (RAMSIZEMESSAGE - $$ + 0x11000)
-    push 3
-    push 0
-    call PRINTMESSAGE
-    add esp, 12 
-
-    ;
+    
     push (SWITCHSUCCESSMESSAGE - $$ + 0x11000)
     push 4
     push 0
     call PRINTMESSAGE
     add esp, 12
-
 
     jmp dword 0x08:0x11200
 
