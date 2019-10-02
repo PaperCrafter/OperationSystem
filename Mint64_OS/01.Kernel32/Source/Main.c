@@ -4,7 +4,7 @@ void kPrintString(int iX, int iY, const char* pcString);
 
 //Main function
 void Main(void){
-    kPrintString(0,3,"C Language Kernel Started~!!!");
+    kPrintString(0,5,"C Language Kernel Started~!!!");
 
     while(1);    
 }

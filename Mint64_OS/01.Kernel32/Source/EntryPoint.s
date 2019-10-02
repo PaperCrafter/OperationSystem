@@ -44,21 +44,12 @@ PROTECTEDMODE:
     mov ss, ax
     mov esp, 0xFFFE
     mov ebp, 0xFFFE
-
-    ;과제 1. RAM 크기 출력
-    push (RAMSIZEMESSAGE - $$ + 0x11000)
-    push 3
-    push 0
-    call PRINTMESSAGE
-    add esp, 12 
-
-    ;
+    
     push (SWITCHSUCCESSMESSAGE - $$ + 0x11000)
     push 4
     push 0
     call PRINTMESSAGE
     add esp, 12
-
 
     jmp dword 0x08:0x11200
 
