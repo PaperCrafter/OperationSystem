@@ -3,7 +3,7 @@
 
 SECTION .text
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
+;   코드 영역
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 START:
     mov ax, 0x1100;
@@ -13,10 +13,26 @@ START:
 
     cli
     lgdt[GDTR]
+; BIOS A20 Activate
+	mov ax, 0x2401
+    int 0x15
+
+    jc .A20GATEERROR
+    jmp .A20GATESUCCESS
+
+.A20GATEERROR:
+    in al, 0x92
+    or al, 0x02
+    and al, 0xFE
+    out 0x92, al
+
+.A20GATESUCCESS:
+    cli
+    lgdt[GDTR]
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-;
+;   보호모드로 진입
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -29,7 +45,7 @@ jmp dword 0x08: (PROTECTEDMODE -$$ + 0x11000)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-;
+;   함수 코드 영역
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 [BITS 32]
@@ -44,10 +60,9 @@ PROTECTEDMODE:
     mov ss, ax
     mov esp, 0xFFFE
     mov ebp, 0xFFFE
-
-    ;
+    
     push (SWITCHSUCCESSMESSAGE - $$ + 0x11000)
-    push 3
+    push 4
     push 0
     call PRINTMESSAGE
     add esp, 12
@@ -55,10 +70,10 @@ PROTECTEDMODE:
     jmp dword 0x08:0x11200
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
+;  함수 코드 영역
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-;
+;메세지를 출력하는 함수
+;스택에 x좌표, y좌표, 문자열 
 
 PRINTMESSAGE:
     push ebp
@@ -70,7 +85,7 @@ PRINTMESSAGE:
     push edx
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;
+    ; X, Y좌표를 비디오 메모리와 어드레스를 계산함
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;
     mov eax, dword[ebp+12]
@@ -110,9 +125,9 @@ PRINTMESSAGE:
     ret
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
+;   데이터 영역
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
+; 아래의 데이터들을 8바이트에 맞춰 정렬하기 위해 추가
 align 8, db 0
 
 ;GDTR
@@ -148,6 +163,7 @@ GDT:
 GDTEND:
 
 SWITCHSUCCESSMESSAGE: db 'Switch To Protected Mode Success~!!', 0
+RAMSIZEMESSAGE: db 'RAM Size XX MB', 0
 
 times 512 -($ - $$) db 0x00
 

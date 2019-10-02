@@ -8,11 +8,11 @@
 ################################################################################
 # 컴파일러 및 링커 정의
 NASM32 = nasm
-GCC32 = x86_64-pc-linux-gcc.exe -c -m32 -ffreestanding
-LD32 = x86_64-pc-linux-ld.exe -melf_i386 -T ../elf_i386.x -nostdlib -e Main -Ttext 0x11200
+GCC32 = gcc -c -m32 -ffreestanding
+LD32 = gcc -m32 -T ../elf_i386.x -nostdlib -e Main -Ttext 0x11200
 
 # 바이너리 이미지 생성을 위한 OBJCOPY 옵션 정의
-OBJCOPY32 = x86_64-pc-linux-objcopy -j .text -j .data -j .rodata -j .bss -S -O binary
+OBJCOPY32 = objcopy -j .text -j .data -j .rodata -j .bss -S -O binary
 
 # 디렉터리 정의
 OBJECTDIRECTORY = Temp
