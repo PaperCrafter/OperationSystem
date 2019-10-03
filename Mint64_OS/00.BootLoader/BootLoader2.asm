@@ -104,7 +104,7 @@ READDATA:
 
 	;//BIOS READ Function
 	mov ah, 0x02
-	mov al, 0x02
+	mov al, 0x03	
 	mov ch, byte [ TRACKNUMBER ]
 	mov cl, byte [ SECTORNUMBER ]
 	mov dh, byte [ HEADNUMBER ]

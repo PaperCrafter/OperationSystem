@@ -1,4 +1,5 @@
 #include "Types.h"
+#include "Page.h"
 
 #define TRUE ((void *) 1)
 
@@ -35,6 +36,12 @@ void Main(void){
 	    	while( 1 ) ;
 	    }
 	    kPrintString( 45, 7, "Pass" );
+	    
+	    
+	    // IA-32e mod Kernel page table create
+	    kPrintString( 0, 8, "IA-32e Page Tables Initialize...............[    ]" );
+	    kInitializePageTables();
+	    kPrintString( 45, 8, "Pass" );
 
 
     while(1);    
