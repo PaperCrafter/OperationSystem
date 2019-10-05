@@ -2,9 +2,9 @@
 [BITS 16]   ;
 
 SECTION .text
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;   코드 영역
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;code area
+
 START:
     mov ax, 0x1100;
     
@@ -30,33 +30,23 @@ START:
     cli
     lgdt[GDTR]
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-;   보호모드로 진입
-;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; protected mode
 
 mov eax, 0x4000003B
 mov cr0, eax
 
-;
-;
-jmp dword 0x08: (PROTECTEDMODE -$$ + 0x11000)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-;   함수 코드 영역
-;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+jmp dword 0x18: (PROTECTEDMODE -$$ + 0x11000)
+
+
 [BITS 32]
 PROTECTEDMODE:
-    mov ax, 0x10
+    mov ax, 0x20
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
-
-    ;
+   
     mov ss, ax
     mov esp, 0xFFFE
     mov ebp, 0xFFFE
@@ -67,13 +57,9 @@ PROTECTEDMODE:
     call PRINTMESSAGE
     add esp, 12
 
-    jmp dword 0x08:0x11200
+    jmp dword 0x18:0x11200
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;  함수 코드 영역
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;메세지를 출력하는 함수
-;스택에 x좌표, y좌표, 문자열 
+;function code
 
 PRINTMESSAGE:
     push ebp
@@ -84,22 +70,16 @@ PRINTMESSAGE:
     push ecx
     push edx
 
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ; X, Y좌표를 비디오 메모리와 어드레스를 계산함
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;
     mov eax, dword[ebp+12]
     mov esi, 160
     mul esi
     mov edi, eax
 
-    ;
     mov eax, dword[ebp + 8]
     mov esi, 2
     mul esi
     add edi, eax
 
-    ;
     mov esi, dword[ebp + 16]
 
 .MESSAGELOOP:
@@ -124,10 +104,9 @@ PRINTMESSAGE:
     pop ebp
     ret
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;   데이터 영역
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; 아래의 데이터들을 8바이트에 맞춰 정렬하기 위해 추가
+
+; data area
+
 align 8, db 0
 
 ;GDTR
@@ -143,6 +122,22 @@ GDT:
         db 0x00
         db 0x00
         db 0x00
+        
+    IA_32eCODEDESCRIPTOR:     
+        dw 0xFFFF       
+        dw 0x0000       
+        db 0x00         
+        db 0x9A         
+        db 0xAF         
+        db 0x00           
+        
+    IA_32eDATADESCRIPTOR:
+        dw 0xFFFF       
+        dw 0x0000       
+        db 0x00         
+        db 0x92         
+        db 0xAF         
+        db 0x00         
 
     CODEDESCRIPTOR:
         dw 0xFFFF

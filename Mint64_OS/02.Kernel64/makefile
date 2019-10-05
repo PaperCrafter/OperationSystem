@@ -1,28 +1,19 @@
-NASM32 = nasm
-GCC32 = gcc -c -m32 -ffreestanding
-LD32 = gcc -m32 -T ../elf_i386.x -nostdlib -e Main -Ttext 0x11200
+NASM64 = nasm -f elf64
+GCC64 = gcc -c -m64 -ffreestanding
+LD64 = gcc -m64 -T ../elf_x86_64.x -nostdlib -e Main -Ttext 0x200000
 
-OBJCOPY32 = objcopy -j .text -j .data -j .rodata -j .bss -S -O binary
+OBJCOPY64 = objcopy -j .text -j .data -j .rodata -j .bss -S -O binary
 
-# ���͸� ����
 OBJECTDIRECTORY = Temp
 SOURCEDIRECTORY	= Source
 
-################################################################################
-# ���� �׸� �� ���� ��� ����
-################################################################################
-# �⺻������ ���带 ������ ���
-all: prepare Kernel32.bin
 
-# ������Ʈ ������ ��ġ�� ���͸��� ����
+all: prepare Kernel64.bin
+
+
 prepare:
 	mkdir -p $(OBJECTDIRECTORY)
 
-# Ŀ�� ��Ʈ�� ����Ʈ ����
-$(OBJECTDIRECTORY)/EntryPoint.bin: $(SOURCEDIRECTORY)/EntryPoint.s
-	$(NASM32) -o $@ $<
-
-# Ŀ���� C �ҽ� ���Ͽ� ���� ������ ���� ����
 dep:
 	@echo === Make Dependancy File ===
 	make -C $(OBJECTDIRECTORY) -f ../makefile InternalDependency
@@ -30,15 +21,11 @@ dep:
 
 # ���͸��� ������Ʈ ���� ���͸��� �̵��ؼ� ������ ���� �� ���� ������ ����
 ExecuteInternalBuild: dep
-	make -C $(OBJECTDIRECTORY) -f ../makefile Kernel32.elf
+	make -C $(OBJECTDIRECTORY) -f ../makefile Kernel64.elf
 
-# Ŀ�� �̹����� ���̳ʸ� ���Ϸ� ��ȯ
-$(OBJECTDIRECTORY)/Kernel32.elf.bin: ExecuteInternalBuild
-	$(OBJCOPY32) $(OBJECTDIRECTORY)/Kernel32.elf $@
-
-# ��Ʈ�� ����Ʈ�� Ŀ���� ���ļ� ��ȣ ��� ���̳ʸ� ����
-Kernel32.bin: $(OBJECTDIRECTORY)/EntryPoint.bin $(OBJECTDIRECTORY)/Kernel32.elf.bin
-	cat $^ > $@
+# Ŀ�� �̹����� ���̳ʸ� ���Ϸ� ��ȯ�Ͽ� IA-32e ��� ���̳ʸ� ����
+Kernel64.bin: ExecuteInternalBuild
+	$(OBJCOPY64) $(OBJECTDIRECTORY)/Kernel64.elf $@
 		
 # �ҽ� ������ ������ ������ ���� ����	
 clean:
@@ -48,28 +35,34 @@ clean:
 ################################################################################
 # Make�� ���� �ٽ� ȣ��Ǵ� �κ�, Temp ���͸��� �������� �����
 ################################################################################
+# ������ ������� ��Ʈ�� ����Ʈ �ҽ� ���� ����, Temp ���͸��� �������� ����
+ENTRYPOINTSOURCEFILE = ../$(SOURCEDIRECTORY)/EntryPoint.s
+ENTRYPOINTOBJECTFILE = EntryPoint.o
 # ������ C �ҽ� ���� ����, Temp ���͸��� �������� ����
-CENTRYPOINTOBJECTFILE = Main.o
 CSOURCEFILES = $(wildcard ../$(SOURCEDIRECTORY)/*.c)
 ASSEMBLYSOURCEFILES = $(wildcard ../$(SOURCEDIRECTORY)/*.asm)
-COBJECTFILES = $(subst Main.o, , $(notdir $(patsubst %.c,%.o,$(CSOURCEFILES))))
+COBJECTFILES = $(notdir $(patsubst %.c,%.o,$(CSOURCEFILES)))
 ASSEMBLYOBJECTFILES = $(notdir $(patsubst %.asm,%.o,$(ASSEMBLYSOURCEFILES)))
+
+# ������� ��Ʈ�� ����Ʈ ����
+$(ENTRYPOINTOBJECTFILE): $(ENTRYPOINTSOURCEFILE)
+	$(NASM64) -o $@ $<
 
 # .c ������ .o ���Ϸ� �ٲٴ� ��Ģ ����
 %.o: ../$(SOURCEDIRECTORY)/%.c
-	$(GCC32) -c $<
+	$(GCC64) -c $<
 
 # .asm ������ .o ���Ϸ� �ٲٴ� ��Ģ ����
 %.o: ../$(SOURCEDIRECTORY)/%.asm
-	$(NASM32) -f elf32 -o $@ $<
+	$(NASM64) -o $@ $<
 
 # ���� �������� ���õ� ������ ����
 InternalDependency:
-	$(GCC32) -MM $(CSOURCEFILES) > Dependency.dep
+	$(GCC64) -MM $(CSOURCEFILES) > Dependency.dep
 
 # ���� Ŀ�� �̹����� ����
-Kernel32.elf: $(CENTRYPOINTOBJECTFILE) $(COBJECTFILES) $(ASSEMBLYOBJECTFILES)
-	$(LD32) -o $@ $^
+Kernel64.elf: $(ENTRYPOINTOBJECTFILE) $(COBJECTFILES) $(ASSEMBLYOBJECTFILES)
+	$(LD64) -o $@ $^
 
 # ���� ���丮�� ���� ��, dependency ������ ������ make�� ����	
 ifeq (Dependency.dep, $(wildcard Dependency.dep))

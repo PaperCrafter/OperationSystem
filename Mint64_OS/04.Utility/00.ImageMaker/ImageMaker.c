@@ -1,24 +1,19 @@
-/**
- *  file    ImageMaker.c
- *  date    2008/12/16
- *  author  kkamagui 
- *          Copyright(c)2008 All rights reserved by kkamagui
- *  brief   ��Ʈ �δ��� Ŀ�� �̹����� �����ϰ�, ���� ������ ������ �ִ� ImageMaker�� 
- *          �ҽ� ����
- */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <sys/io.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
 
+#define O_BINARY 0
 #define BYTESOFSECTOR  512
 
 // �Լ� ����
 int AdjustInSectorSize( int iFd, int iSourceSize );
-void WriteKernelInformation( int iTargetFd, int iKernelSectorCount );
+void WriteKernelInformation( int iTargetFd, int iTotalKernelSectorCount, 
+        int iKernel32SectorCount );
 int CopyFile( int iSourceFd, int iTargetFd );
 
 /**
@@ -30,18 +25,19 @@ int main(int argc, char* argv[])
     int iTargetFd;
     int iBootLoaderSize;
     int iKernel32SectorCount;
+    int iKernel64SectorCount;
     int iSourceSize;
         
     // Ŀ�ǵ� ���� �ɼ� �˻�
-    if( argc < 3 )
+    if( argc < 4 )
     {
-        fprintf( stderr, "[ERROR] ImageMaker.exe BootLoader.bin Kernel32.bin\n" );
+        fprintf( stderr, "[ERROR] ImageMaker.exe BootLoader.bin Kernel32.bin Kernel64.bin\n" );
         exit( -1 );
     }
     
     // Disk.img ������ ����
     if( ( iTargetFd = open( "Disk.img", O_RDWR | O_CREAT |  O_TRUNC |
-            S_IREAD | S_IWRITE ) ) == -1 )
+            O_BINARY, S_IREAD | S_IWRITE ) ) == -1 )
     {
         fprintf( stderr , "[ERROR] Disk.img open fail.\n" );
         exit( -1 );
@@ -51,7 +47,7 @@ int main(int argc, char* argv[])
     // ��Ʈ �δ� ������ ��� ��� ������ ��ũ �̹��� ���Ϸ� ����
     //--------------------------------------------------------------------------
     printf( "[INFO] Copy boot loader to image file\n" );
-    if( ( iSourceFd = open( argv[ 1 ], O_RDONLY) ) == -1 )
+    if( ( iSourceFd = open( argv[ 1 ], O_RDONLY | O_BINARY ) ) == -1 )
     {
         fprintf( stderr, "[ERROR] %s open fail\n", argv[ 1 ] );
         exit( -1 );
@@ -69,7 +65,7 @@ int main(int argc, char* argv[])
     // 32��Ʈ Ŀ�� ������ ��� ��� ������ ��ũ �̹��� ���Ϸ� ����
     //--------------------------------------------------------------------------
     printf( "[INFO] Copy protected mode kernel to image file\n" );
-    if( ( iSourceFd = open( argv[ 2 ], O_RDONLY) ) == -1 )
+    if( ( iSourceFd = open( argv[ 2 ], O_RDONLY | O_BINARY ) ) == -1 )
     {
         fprintf( stderr, "[ERROR] %s open fail\n", argv[ 2 ] );
         exit( -1 );
@@ -80,15 +76,34 @@ int main(int argc, char* argv[])
     
     // ���� ũ�⸦ ���� ũ���� 512����Ʈ�� ���߱� ���� ������ �κ��� 0x00 ���� ä��
     iKernel32SectorCount = AdjustInSectorSize( iTargetFd, iSourceSize );
-    printf( "[INFO] %s size = [%d] and sector count = [%d]\n",
+    printf( "[INFO] %s size = [%d] and sector Count = [%d]\n",
                 argv[ 2 ], iSourceSize, iKernel32SectorCount );
 
     //--------------------------------------------------------------------------
+    // 64��Ʈ Ŀ�� ������ ��� ��� ������ ��ũ �̹��� ���Ϸ� ����
+    //--------------------------------------------------------------------------
+    printf( "[INFO] Copy IA-32e mode kernel to image file\n" );
+    if( ( iSourceFd = open( argv[ 3 ], O_RDONLY | O_BINARY ) ) == -1 )
+    {
+        fprintf( stderr, "[ERROR] %s open fail\n", argv[ 3 ] );
+        exit( -1 );
+    }
+
+    iSourceSize = CopyFile( iSourceFd, iTargetFd );
+    close( iSourceFd );
+    
+    // ���� ũ�⸦ ���� ũ���� 512����Ʈ�� ���߱� ���� ������ �κ��� 0x00 ���� ä��
+    iKernel64SectorCount = AdjustInSectorSize( iTargetFd, iSourceSize );
+    printf( "[INFO] %s size = [%d] and sector count = [%d]\n",
+                argv[ 3 ], iSourceSize, iKernel64SectorCount );
+    
+    //--------------------------------------------------------------------------
     // ��ũ �̹����� Ŀ�� ������ ����
     //--------------------------------------------------------------------------
-    printf( "[INFO] Start to write kernel information\n" );    
+    printf( "[INFO] Start to write kernel information\n" );
     // ��Ʈ������ 5��° ����Ʈ���� Ŀ�ο� ���� ������ ����
-    WriteKernelInformation( iTargetFd, iKernel32SectorCount );
+    WriteKernelInformation( iTargetFd, iKernel32SectorCount + iKernel64SectorCount,
+            iKernel32SectorCount );
     printf( "[INFO] Image file create complete\n" );
 
     close( iTargetFd );
@@ -131,7 +146,8 @@ int AdjustInSectorSize( int iFd, int iSourceSize )
 /**
  *  ��Ʈ �δ��� Ŀ�ο� ���� ������ ����
 */
-void WriteKernelInformation( int iTargetFd, int iKernelSectorCount )
+void WriteKernelInformation( int iTargetFd, int iTotalKernelSectorCount, 
+        int iKernel32SectorCount )
 {
     unsigned short usData;
     long lPosition;
@@ -144,12 +160,17 @@ void WriteKernelInformation( int iTargetFd, int iKernelSectorCount )
             lPosition, errno, SEEK_SET );
         exit( -1 );
     }
-
-    usData = ( unsigned short ) iKernelSectorCount;
+    
+    // ��Ʈ �δ��� ������ �� ���� �� �� ��ȣ ��� Ŀ���� ���� �� ����
+    usData = ( unsigned short ) iTotalKernelSectorCount;
+    write( iTargetFd, &usData, 2 );
+    usData = ( unsigned short ) iKernel32SectorCount;
     write( iTargetFd, &usData, 2 );
 
     printf( "[INFO] Total sector count except boot loader [%d]\n", 
-        iKernelSectorCount );
+        iTotalKernelSectorCount );
+    printf( "[INFO] Total sector count of protected mode kernel [%d]\n", 
+        iKernel32SectorCount );
 }
 
 /**

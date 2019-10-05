@@ -7,6 +7,7 @@ jmp 0x1000:START
 
 SECTORCOUNT:	dw	0x0000
 TOTALSECTORCOUNT:	dw 0x02
+KERNEL32SECTORCOUNT: dw 0x02  
 
 START:
 	mov ax, cs
@@ -104,7 +105,7 @@ READDATA:
 
 	;//BIOS READ Function
 	mov ah, 0x02
-	mov al, 0x03	
+	mov al, 0x09
 	mov ch, byte [ TRACKNUMBER ]
 	mov cl, byte [ SECTORNUMBER ]
 	mov dh, byte [ HEADNUMBER ]
