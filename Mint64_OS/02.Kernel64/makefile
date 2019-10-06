@@ -1,70 +1,71 @@
+##################################################
+# ºôµå È¯°æ ¹× ±ÔÄ¢ ¼³Á¤
+##################################################
 NASM64 = nasm -f elf64
-GCC64 = gcc -c -m64 -ffreestanding
-LD64 = gcc -m64 -T ../elf_x86_64.x -nostdlib -e Main -Ttext 0x200000
-
+# GCC64 = x86_64-pc-linux-gcc.exe -c -m64 -ffreestanding -g
+GCC64 = gcc -c -m64 -ffreestanding -g
+# LD64 = x86_64-pc-linux-ld.exe -melf_x86_64 -T ../elf_x86_64.x -nostdlib -e Main -Ttext 0x200000
+LD64 = ld -melf_x86_64 -T ../elf_x86_64.x -nostdlib -e Main -Ttext 0x200000
+# OBJCOPY64 = x86_64-pc-linux-objcopy -j .text -j .data -j .rodata -j .bss -S -O binary
 OBJCOPY64 = objcopy -j .text -j .data -j .rodata -j .bss -S -O binary
 
 OBJECTDIRECTORY = Temp
-SOURCEDIRECTORY	= Source
+SOURCEDIRECTORY = Source
 
-
+##################################################
+# ºôµå Ç×¸ñ ¹× ºôµå ¹æ¹ý ¼³Á¤
+##################################################
 all: prepare Kernel64.bin
-
 
 prepare:
 	mkdir -p $(OBJECTDIRECTORY)
-
+	
 dep:
 	@echo === Make Dependancy File ===
 	make -C $(OBJECTDIRECTORY) -f ../makefile InternalDependency
 	@echo === Dependancy Search Complete ===
-
-# ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ ï¿½Ìµï¿½ï¿½Ø¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	
 ExecuteInternalBuild: dep
 	make -C $(OBJECTDIRECTORY) -f ../makefile Kernel64.elf
-
-# Ä¿ï¿½ï¿½ ï¿½Ì¹ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì³Ê¸ï¿½ ï¿½ï¿½ï¿½Ï·ï¿½ ï¿½ï¿½È¯ï¿½Ï¿ï¿½ IA-32e ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì³Ê¸ï¿½ ï¿½ï¿½ï¿½ï¿½
+	
 Kernel64.bin: ExecuteInternalBuild
 	$(OBJCOPY64) $(OBJECTDIRECTORY)/Kernel64.elf $@
-		
-# ï¿½Ò½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½	
+	
 clean:
 	rm -f *.bin
 	rm -f $(OBJECTDIRECTORY)/*.*
-
-################################################################################
-# Makeï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ù½ï¿½ È£ï¿½ï¿½Ç´ï¿½ ï¿½Îºï¿½, Temp ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½
-################################################################################
-# ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ® ï¿½Ò½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, Temp ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	
+##################################################################
+# Make¿¡ ÀÇÇØ ´Ù½Ã È£ÃâµÇ´Â ºÎºÐ, Temp µð·ºÅÍ¸®¸¦ ±âÁØÀ¸·Î ¼öÇàµÊ
+##################################################################
+#ºôµåÇÒ ¾î¼Àºí¸® ¿£Æ®¸® Æ÷ÀÎÆ® ¼Ò½º ÆÄÀÏ Á¤ÀÇ, Temp µð·ºÅÍ¸® ±âÁØÀ¸·Î ¼³Á¤
 ENTRYPOINTSOURCEFILE = ../$(SOURCEDIRECTORY)/EntryPoint.s
 ENTRYPOINTOBJECTFILE = EntryPoint.o
-# ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ C ï¿½Ò½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, Temp ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+
+#ºôµåÇÒ C ¼Ò½ºÆÄÀÏ Á¤ÀÇ
 CSOURCEFILES = $(wildcard ../$(SOURCEDIRECTORY)/*.c)
 ASSEMBLYSOURCEFILES = $(wildcard ../$(SOURCEDIRECTORY)/*.asm)
 COBJECTFILES = $(notdir $(patsubst %.c,%.o,$(CSOURCEFILES)))
 ASSEMBLYOBJECTFILES = $(notdir $(patsubst %.asm,%.o,$(ASSEMBLYSOURCEFILES)))
 
-# ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½
+# ¾î¼Àºí¸® ¿£Æ®¸® Æ÷ÀÎÆ® ºôµå
 $(ENTRYPOINTOBJECTFILE): $(ENTRYPOINTSOURCEFILE)
 	$(NASM64) -o $@ $<
-
-# .c ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ .o ï¿½ï¿½ï¿½Ï·ï¿½ ï¿½Ù²Ù´ï¿½ ï¿½ï¿½Ä¢ ï¿½ï¿½ï¿½ï¿½
+	
+# .c ÆÄÀÏÀ» .o ÆÄÀÏ·Î ¹Ù²Ù´Â ±ÔÄ¢ Á¤ÀÇ
 %.o: ../$(SOURCEDIRECTORY)/%.c
 	$(GCC64) -c $<
-
-# .asm ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ .o ï¿½ï¿½ï¿½Ï·ï¿½ ï¿½Ù²Ù´ï¿½ ï¿½ï¿½Ä¢ ï¿½ï¿½ï¿½ï¿½
+	
+# .asm ÆÄÀÏÀ» .o ÆÄÀÏ·Î ¹Ù²Ù´Â ±ÔÄ¢ Á¤ÀÇ
 %.o: ../$(SOURCEDIRECTORY)/%.asm
 	$(NASM64) -o $@ $<
-
-# ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ãµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	
 InternalDependency:
 	$(GCC64) -MM $(CSOURCEFILES) > Dependency.dep
-
-# ï¿½ï¿½ï¿½ï¿½ Ä¿ï¿½ï¿½ ï¿½Ì¹ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	
 Kernel64.elf: $(ENTRYPOINTOBJECTFILE) $(COBJECTFILES) $(ASSEMBLYOBJECTFILES)
 	$(LD64) -o $@ $^
-
-# ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ä¸®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½, dependency ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ makeï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½	
+	
 ifeq (Dependency.dep, $(wildcard Dependency.dep))
 include Dependency.dep
 endif
