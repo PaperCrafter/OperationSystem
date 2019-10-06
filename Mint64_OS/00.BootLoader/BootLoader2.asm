@@ -3,16 +3,16 @@
 
 SECTION .text
 
-jmp 0x1000:START
+jmp 0x9000:START
 
 SECTORCOUNT:	dw	0x0000
 TOTALSECTORCOUNT:	dw 0x02
+KERNEL32SECTORCOUNT: dw 0x02  
 
 START:
 	mov ax, cs
 	mov ds, ax
 	mov si, 0
-
 
 
 ;// HW1 =========
@@ -65,14 +65,14 @@ START:
 	push 0
 	call PRINTMESSAGE
 	add sp, 6
+;// HW2 =========
+	call JELLER
 
-call JELLER
-
-push DAYMESSAGE
-push 1
-push 25
-call PRINTMESSAGE
-add sp, 6
+	push DAYMESSAGE
+	push 1
+	push 25
+	call PRINTMESSAGE
+	add sp, 6
 
 ;// PRINT OS LOAD MESSAGE ==================================================
 	push IMAGELOADINGMESSAGE
@@ -90,7 +90,7 @@ RESETDISK:
 	jc HANDLEDISKERROR
 
 	;// READ SECTOR
-	mov si, 0x1100
+	mov si, 0x1000
 	mov es, si
 	mov bx, 0x0000
 
@@ -104,7 +104,7 @@ READDATA:
 
 	;//BIOS READ Function
 	mov ah, 0x02
-	mov al, 0x02
+	mov al, 0x09
 	mov ch, byte [ TRACKNUMBER ]
 	mov cl, byte [ SECTORNUMBER ]
 	mov dh, byte [ HEADNUMBER ]
@@ -159,7 +159,7 @@ READEND:
 	call PRINTMESSAGE
 	add	sp, 6
 
-	jmp 0x1100:0x0000
+	jmp 0x1000:0x0000
 
 
 ;// FUNCTION ==================================================
@@ -172,128 +172,128 @@ HANDLEDISKERROR:
 	jmp $
 
 JELLER:
-cmp byte[MONTH], 0x01
-je  .MONTH13
-cmp byte[MONTH], 0x02
-je  .MONTH14
+	cmp byte[MONTH], 0x01
+	je  .MONTH13
+	cmp byte[MONTH], 0x02
+	je  .MONTH14
 
-.START:
-mov dx, 0x00
-add dl, byte[DAY]
-
-mov ax, 0x00 ;초기화
-add al, byte[MONTH]
-add al, 0x01
-mov cx, 0x00 ;초기화
-mov cl, 0x0D
-mul cl
-mov cl, 0x05
-div cl
-add dl, al
-
-add dl, byte[YEAR]
-
-mov ax, 0x00 ;초기화
-mov al, byte[YEAR]
-mov cl, 0x04
-div cl
-add dl, al
-
-mov ax, 0x00 ;초기화
-mov al, byte[CEN]
-mov cl, 0x04
-div cl
-add dl, al
-
-mov al, byte[CEN]
-mov cl, 0x05
-mul cl
-add dx, ax
-
-mov ax, dx
-mov cl, 0x07
-div cl
-
-cmp    ah, 0x00
-je     .D6
-
-cmp    ah, 0x01
-je     .D7
-
-cmp    ah, 0x02
-je     .D1
-
-cmp    ah, 0x03
-je     .D2
-
-cmp    ah, 0x04
-je     .D3
-
-cmp    ah, 0x05
-je     .D4
-
-cmp    ah, 0x06
-je     .D5
-
-.D1:
-mov ax, 'Mo'
-mov	[DAYMESSAGE + 0], ax
-mov al, 'n'
-mov	[DAYMESSAGE + 2], al
-ret
-
-.D2:
-mov ax, 'Tu'
-mov	[DAYMESSAGE + 0], ax
-mov al, 'e'
-mov	[DAYMESSAGE + 2], al
-ret
-
-.D3:
-mov ax, 'We'
-mov	[DAYMESSAGE + 0], ax
-mov al, 'd'
-mov	[DAYMESSAGE + 2], al
-ret
-
-.D4:
-mov ax, 'Th'
-mov	[DAYMESSAGE + 0], ax
-mov al, 'u'
-mov	[DAYMESSAGE + 2], al
-ret
-
-.D5:
-mov ax, 'Fr'
-mov	[DAYMESSAGE + 0], ax
-mov al, 'i'
-mov	[DAYMESSAGE + 2], al
-ret
-
-.D6:
-mov ax, 'Sa'
-mov	[DAYMESSAGE + 0], ax
-mov al, 't'
-mov	[DAYMESSAGE + 2], al
-ret
-
-.D7:
-mov ax, 'Su'
-mov	[DAYMESSAGE + 0], ax
-mov al, 'n'
-mov	[DAYMESSAGE + 2], al
-ret
-
-
-.MONTH13:
-mov byte[MONTH], 0x0d
-sub byte[YEAR], 0x01
-jmp .START
-
-.MONTH14:
-mov byte[MONTH], 0x0e
-sub byte[YEAR], 0x01
-jmp .START
+	.START:
+	mov dx, 0x00
+	add dl, byte[DAY]
+	
+	mov ax, 0x00 ;초기화
+	add al, byte[MONTH]
+	add al, 0x01
+	mov cx, 0x00 ;초기화
+	mov cl, 0x0D
+	mul cl
+	mov cl, 0x05
+	div cl
+	add dl, al
+	
+	add dl, byte[YEAR]
+	
+	mov ax, 0x00 ;초기화
+	mov al, byte[YEAR]
+	mov cl, 0x04
+	div cl
+	add dl, al
+	
+	mov ax, 0x00 ;초기화
+	mov al, byte[CEN]
+	mov cl, 0x04
+	div cl
+	add dl, al
+	
+	mov al, byte[CEN]
+	mov cl, 0x05
+	mul cl
+	add dx, ax
+	
+	mov ax, dx
+	mov cl, 0x07
+	div cl
+	
+	cmp    ah, 0x00
+	je     .D6
+	
+	cmp    ah, 0x01
+	je     .D7
+	
+	cmp    ah, 0x02
+	je     .D1
+	
+	cmp    ah, 0x03
+	je     .D2
+	
+	cmp    ah, 0x04
+	je     .D3
+	
+	cmp    ah, 0x05
+	je     .D4
+	
+	cmp    ah, 0x06
+	je     .D5
+	
+	.D1:
+	mov ax, 'Mo'
+	mov	[DAYMESSAGE + 0], ax
+	mov al, 'n'
+	mov	[DAYMESSAGE + 2], al
+	ret
+	
+	.D2:
+	mov ax, 'Tu'
+	mov	[DAYMESSAGE + 0], ax
+	mov al, 'e'
+	mov	[DAYMESSAGE + 2], al
+	ret
+	
+	.D3:
+	mov ax, 'We'
+	mov	[DAYMESSAGE + 0], ax
+	mov al, 'd'
+	mov	[DAYMESSAGE + 2], al
+	ret
+	
+	.D4:
+	mov ax, 'Th'
+	mov	[DAYMESSAGE + 0], ax
+	mov al, 'u'
+	mov	[DAYMESSAGE + 2], al
+	ret
+	
+	.D5:
+	mov ax, 'Fr'
+	mov	[DAYMESSAGE + 0], ax
+	mov al, 'i'
+	mov	[DAYMESSAGE + 2], al
+	ret
+	
+	.D6:
+	mov ax, 'Sa'
+	mov	[DAYMESSAGE + 0], ax
+	mov al, 't'
+	mov	[DAYMESSAGE + 2], al
+	ret
+	
+	.D7:
+	mov ax, 'Su'
+	mov	[DAYMESSAGE + 0], ax
+	mov al, 'n'
+	mov	[DAYMESSAGE + 2], al
+	ret
+	
+	
+	.MONTH13:
+	mov byte[MONTH], 0x0d
+	sub byte[YEAR], 0x01
+	jmp .START
+	
+	.MONTH14:
+	mov byte[MONTH], 0x0e
+	sub byte[YEAR], 0x01
+	jmp .START
 
 
 PRINTMESSAGE:
@@ -361,13 +361,13 @@ strNL: db 0
 
 DATE: db 'Current Data: 00/00/0000', 0
 
-;Memory Descriptor returned by int 15
+; Memory Descriptor returned by int 15
 basesAddress dq 0
 length dq 0
 type dd 0
 extAttr dd 0
 
-	;// disk read variables
+;// disk read variables
 SECTORNUMBER:	db	0x05
 HEADNUMBER:	db	0x00
 TRACKNUMBER:	db	0x00

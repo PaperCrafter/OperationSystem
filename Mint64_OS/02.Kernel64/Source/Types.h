@@ -12,6 +12,7 @@
 #define NULL	0
 
 #pragma pack( push, 1 )
+//Memory Alignment Unit = 1
 
 typedef struct kCharactorStruct
 {
