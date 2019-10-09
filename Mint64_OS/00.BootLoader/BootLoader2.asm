@@ -7,7 +7,7 @@ jmp 0x9000:START
 
 SECTORCOUNT:	dw	0x0000
 TOTALSECTORCOUNT:	dw 0x02
-KERNEL32SECTORCOUNT: dw 0x02  
+KERNEL32SECTORCOUNT: dw 0x02
 
 START:
 	mov ax, cs
@@ -23,40 +23,64 @@ START:
 	;month
 	MOV BH, DH
 	SHR BH, 4
+	MOV AL, BH
 	ADD BH, 30H
 	MOV [DATE+14], BH
+	MOV BH, 0x0A
+	MUL BH
+	MOV BL, AL
 	MOV BH, DH
 	AND BH, 0FH
+	ADD BL, BH
+	MOV [MONTH], BL
 	ADD BH, 30H
 	MOV [DATE+15], BH
 
 	;day
 	MOV BH, DL
 	SHR BH, 4
+	MOV AL, BH
 	ADD BH, 30H
 	MOV [DATE+17], BH
+	MOV BH, 0x0A
+	MUL BH
+	MOV BL, AL
 	MOV BH, DL
 	AND BH, 0FH
+	ADD BL, BH
+	MOV [DAY], BL
 	ADD BH, 30H
 	MOV [DATE+18], BH
 
 	;century
 	MOV BH, CH
 	SHR BH, 4
+	MOV AL, BH
 	ADD BH, 30H
 	MOV [DATE+20], BH
+	MOV BH, 0x0A
+	MUL BH
+	MOV BL, AL
 	MOV BH, CH
 	AND BH, 0FH
+	ADD BL, BH
+	MOV [CEN], BL
 	ADD BH, 30H
 	MOV [DATE+21], BH
 
 	;year
 	MOV BH, CL
 	SHR BH, 4
+	MOV AL, BH
 	ADD BH, 30H
 	MOV [DATE+22], BH
+	MOV BH, 0x0A
+	MUL BH
+	MOV BL, AL
 	MOV BH, CL
 	AND BH, 0FH
+	ADD BL, BH
+	MOV [YEAR], BL
 	ADD BH, 30H
 	MOV [DATE+23], BH
 
@@ -65,6 +89,7 @@ START:
 	push 0
 	call PRINTMESSAGE
 	add sp, 6
+
 ;// HW2 =========
 	call JELLER
 
@@ -180,7 +205,7 @@ JELLER:
 	.START:
 	mov dx, 0x00
 	add dl, byte[DAY]
-	
+
 	mov ax, 0x00 ;초기화
 	add al, byte[MONTH]
 	add al, 0x01
@@ -190,106 +215,106 @@ JELLER:
 	mov cl, 0x05
 	div cl
 	add dl, al
-	
+
 	add dl, byte[YEAR]
-	
+
 	mov ax, 0x00 ;초기화
 	mov al, byte[YEAR]
 	mov cl, 0x04
 	div cl
 	add dl, al
-	
+
 	mov ax, 0x00 ;초기화
 	mov al, byte[CEN]
 	mov cl, 0x04
 	div cl
 	add dl, al
-	
+
 	mov al, byte[CEN]
 	mov cl, 0x05
 	mul cl
 	add dx, ax
-	
+
 	mov ax, dx
 	mov cl, 0x07
 	div cl
-	
+
 	cmp    ah, 0x00
 	je     .D6
-	
+
 	cmp    ah, 0x01
 	je     .D7
-	
+
 	cmp    ah, 0x02
 	je     .D1
-	
+
 	cmp    ah, 0x03
 	je     .D2
-	
+
 	cmp    ah, 0x04
 	je     .D3
-	
+
 	cmp    ah, 0x05
 	je     .D4
-	
+
 	cmp    ah, 0x06
 	je     .D5
-	
+
 	.D1:
 	mov ax, 'Mo'
 	mov	[DAYMESSAGE + 0], ax
 	mov al, 'n'
 	mov	[DAYMESSAGE + 2], al
 	ret
-	
+
 	.D2:
 	mov ax, 'Tu'
 	mov	[DAYMESSAGE + 0], ax
 	mov al, 'e'
 	mov	[DAYMESSAGE + 2], al
 	ret
-	
+
 	.D3:
 	mov ax, 'We'
 	mov	[DAYMESSAGE + 0], ax
 	mov al, 'd'
 	mov	[DAYMESSAGE + 2], al
 	ret
-	
+
 	.D4:
 	mov ax, 'Th'
 	mov	[DAYMESSAGE + 0], ax
 	mov al, 'u'
 	mov	[DAYMESSAGE + 2], al
 	ret
-	
+
 	.D5:
 	mov ax, 'Fr'
 	mov	[DAYMESSAGE + 0], ax
 	mov al, 'i'
 	mov	[DAYMESSAGE + 2], al
 	ret
-	
+
 	.D6:
 	mov ax, 'Sa'
 	mov	[DAYMESSAGE + 0], ax
 	mov al, 't'
 	mov	[DAYMESSAGE + 2], al
 	ret
-	
+
 	.D7:
 	mov ax, 'Su'
 	mov	[DAYMESSAGE + 0], ax
 	mov al, 'n'
 	mov	[DAYMESSAGE + 2], al
 	ret
-	
-	
+
+
 	.MONTH13:
 	mov byte[MONTH], 0x0d
 	sub byte[YEAR], 0x01
 	jmp .START
-	
+
 	.MONTH14:
 	mov byte[MONTH], 0x0e
 	sub byte[YEAR], 0x01
@@ -348,8 +373,8 @@ PRINTMESSAGE:
 ;// date variables
 
 YEAR: db 0x13
-MONTH: db 0x09
-DAY: db 0x16
+MONTH: db 0x0A
+DAY: db 0x09
 CEN: db 0x14
 
 DAYMESSAGE: db 'Day', 0
