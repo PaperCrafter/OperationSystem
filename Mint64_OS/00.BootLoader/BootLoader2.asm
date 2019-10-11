@@ -169,14 +169,17 @@ READEND:
 	mov edx, 534d4150h
     int 15h
 
-	mov eax, DWORD[length]
-	mov edx, DWORD[type]
-	and dx, 01h
-	dec edx
-	not edx
-	and eax, edx
-	add ebp, eax
-    MOV [RAMSIZEMESSAGE+10], ecx
+	mov dl, 10
+	mov ax, cx
+	div dl
+	add al, 30h
+	mov [RAMSIZEMESSAGE + 11], al
+
+  	shr ax, 4
+	div dl
+	add al, 30h
+	mov [RAMSIZEMESSAGE + 10], al
+
 
 	push RAMSIZEMESSAGE
 	push 3
@@ -188,6 +191,7 @@ READEND:
 
 
 ;// FUNCTION ==================================================
+
 HANDLEDISKERROR:
 	push DISKERRORMESSAGE
 	push 2
@@ -385,6 +389,7 @@ RAMSIZEMESSAGE:	db	'RAM Size: XX MB', 0
 strNL: db 0
 
 DATE: db 'Current Data: 00/00/0000', 0
+HEX_OUT: db '0x0000', 0
 
 ; Memory Descriptor returned by int 15
 basesAddress dq 0
