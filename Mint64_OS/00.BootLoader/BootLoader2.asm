@@ -169,7 +169,7 @@ READEND:
 	mov edx, 534d4150h
     int 15h
 
-	mov dl, 10
+	mov dl, 0x0A
 	mov ax, cx
 	div dl
 	add al, 30h
@@ -179,7 +179,6 @@ READEND:
 	div dl
 	add al, 30h
 	mov [RAMSIZEMESSAGE + 10], al
-
 
 	push RAMSIZEMESSAGE
 	push 3
