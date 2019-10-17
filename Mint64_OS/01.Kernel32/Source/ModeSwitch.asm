@@ -54,12 +54,12 @@
  	or eax, 0x0100
 
  	wrmsr
-
  	
  	mov eax, cr0
  	or eax, 0xE0000000
  	xor eax, 0x60000000
- 	
+	;add wp 1 
+ 	add eax, 0x00010000
  	
  	mov cr0, eax
 

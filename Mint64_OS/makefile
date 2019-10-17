@@ -53,6 +53,9 @@ Utility:
 	@echo ================= Utility Build Complete =================
 	@echo
 	
+debug:
+	qemu-system-x86_64 -s -singlestep -S -L . -fda Disk.img -m 64 -localtime -M pc
+
 run:
 	qemu-system-x86_64 -L . -fda Disk.img -m 64 -localtime -M pc
 
