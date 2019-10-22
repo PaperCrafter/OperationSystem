@@ -1,8 +1,4 @@
 /* Default linker script, for normal executables */
-/* Copyright (C) 2014-2017 Free Software Foundation, Inc.
-   Copying and distribution of this script, with or without modification,
-   are permitted in any medium without royalty provided the copyright
-   notice and this notice are preserved.  */
 OUTPUT_FORMAT("elf64-x86-64", "elf64-x86-64",
 	      "elf64-x86-64")
 OUTPUT_ARCH(i386:x86-64)
@@ -11,22 +7,20 @@ SEARCH_DIR("/usr/cross/x86_64-pc-linux/lib64"); SEARCH_DIR("/usr/cross/x86_64-pc
 SECTIONS
 {
   /* Read-only sections, merged into text segment: */
-  PROVIDE (__executable_start = SEGMENT_START("text-segment", 0x400000)); . = SEGMENT_START("text-segment", 0x400000) + SIZEOF_HEADERS;
-  /* ÏÑπÏÖò Ïû¨Î∞∞ÏπòÎ°ú Ïù∏Ìï¥ ÏïûÏúºÎ°ú Ïù¥ÎèôÎêú Î∂ÄÎ∂Ñ */
-  .text 0x200000          :
+  PROVIDE (__executable_start = 0x400000); . = 0x400000 + SIZEOF_HEADERS;
+/*********************************************************************************/
+/*  ºΩº« ¿ÁπËƒ°∑Œ ¿Œ«ÿ æ’¿∏∑Œ ¿Ãµøµ» ∫Œ∫– */
+  .text 0x200000         :
   {
-    *(.text.unlikely .text.*_unlikely .text.unlikely.*)
-    *(.text.exit .text.exit.*)
-    *(.text.startup .text.startup.*)
-    *(.text.hot .text.hot.*)
     *(.text .stub .text.* .gnu.linkonce.t.*)
     /* .gnu.warning sections are handled specially by elf32.em.  */
     *(.gnu.warning)
-  }
+  } =0x90909090
+
   .rodata         : { *(.rodata .rodata.* .gnu.linkonce.r.*) }
   .rodata1        : { *(.rodata1) }
 
-  /* Îç∞Ïù¥ÌÑ∞ ÏòÅÏó≠Ïùò ÏãúÏûëÏùÑ ÏÑπÌÑ∞ Îã®ÏúÑÎ°ú ÎßûÏ∂§ */
+  /* µ•¿Ã≈Õ øµø™¿« Ω√¿€¿ª ºΩ≈Õ ¥‹¿ß∑Œ ∏¬√„ */
   . = ALIGN (512);
 
   .data           :
@@ -49,8 +43,7 @@ SECTIONS
       pad the .data section.  */
    . = ALIGN(. != 0 ? 64 / 8 : 1);
   }
-/***********************************************************/
-
+/*********************************************************************************/  
   .interp         : { *(.interp) }
   .note.gnu.build-id : { *(.note.gnu.build-id) }
   .hash           : { *(.hash) }
@@ -60,62 +53,60 @@ SECTIONS
   .gnu.version    : { *(.gnu.version) }
   .gnu.version_d  : { *(.gnu.version_d) }
   .gnu.version_r  : { *(.gnu.version_r) }
+  .rel.init       : { *(.rel.init) }
   .rela.init      : { *(.rela.init) }
+  .rel.text       : { *(.rel.text .rel.text.* .rel.gnu.linkonce.t.*) }
   .rela.text      : { *(.rela.text .rela.text.* .rela.gnu.linkonce.t.*) }
+  .rel.fini       : { *(.rel.fini) }
   .rela.fini      : { *(.rela.fini) }
+  .rel.rodata     : { *(.rel.rodata .rel.rodata.* .rel.gnu.linkonce.r.*) }
   .rela.rodata    : { *(.rela.rodata .rela.rodata.* .rela.gnu.linkonce.r.*) }
-  .rela.data.rel.ro   : { *(.rela.data.rel.ro .rela.data.rel.ro.* .rela.gnu.linkonce.d.rel.ro.*) }
+  .rel.data.rel.ro   : { *(.rel.data.rel.ro* .rel.gnu.linkonce.d.rel.ro.*) }
+  .rela.data.rel.ro   : { *(.rela.data.rel.ro* .rela.gnu.linkonce.d.rel.ro.*) }
+  .rel.data       : { *(.rel.data .rel.data.* .rel.gnu.linkonce.d.*) }
   .rela.data      : { *(.rela.data .rela.data.* .rela.gnu.linkonce.d.*) }
-  .rela.tdata   : { *(.rela.tdata .rela.tdata.* .rela.gnu.linkonce.td.*) }
-  .rela.tbss    : { *(.rela.tbss .rela.tbss.* .rela.gnu.linkonce.tb.*) }
+  .rel.tdata	  : { *(.rel.tdata .rel.tdata.* .rel.gnu.linkonce.td.*) }
+  .rela.tdata	  : { *(.rela.tdata .rela.tdata.* .rela.gnu.linkonce.td.*) }
+  .rel.tbss	  : { *(.rel.tbss .rel.tbss.* .rel.gnu.linkonce.tb.*) }
+  .rela.tbss	  : { *(.rela.tbss .rela.tbss.* .rela.gnu.linkonce.tb.*) }
+  .rel.ctors      : { *(.rel.ctors) }
   .rela.ctors     : { *(.rela.ctors) }
+  .rel.dtors      : { *(.rel.dtors) }
   .rela.dtors     : { *(.rela.dtors) }
+  .rel.got        : { *(.rel.got) }
   .rela.got       : { *(.rela.got) }
+  .rel.bss        : { *(.rel.bss .rel.bss.* .rel.gnu.linkonce.b.*) }
   .rela.bss       : { *(.rela.bss .rela.bss.* .rela.gnu.linkonce.b.*) }
+  .rel.ldata      : { *(.rel.ldata .rel.ldata.* .rel.gnu.linkonce.l.*) }
   .rela.ldata     : { *(.rela.ldata .rela.ldata.* .rela.gnu.linkonce.l.*) }
+  .rel.lbss       : { *(.rel.lbss .rel.lbss.* .rel.gnu.linkonce.lb.*) }
   .rela.lbss      : { *(.rela.lbss .rela.lbss.* .rela.gnu.linkonce.lb.*) }
+  .rel.lrodata    : { *(.rel.lrodata .rel.lrodata.* .rel.gnu.linkonce.lr.*) }
   .rela.lrodata   : { *(.rela.lrodata .rela.lrodata.* .rela.gnu.linkonce.lr.*) }
-  .rela.ifunc     : { *(.rela.ifunc) }
-  .rela.plt       :
-    {
-      *(.rela.plt)
-      PROVIDE_HIDDEN (__rela_iplt_start = .);
-      *(.rela.iplt)
-      PROVIDE_HIDDEN (__rela_iplt_end = .);
-    }
+  .rel.plt        : { *(.rel.plt) }
+  .rela.plt       : { *(.rela.plt) }
   .init           :
   {
-    KEEP (*(SORT_NONE(.init)))
-  }
-  .plt            : { *(.plt) *(.iplt) }
-.plt.got        : { *(.plt.got) }
-.plt.sec        : { *(.plt.sec) }
-/***************************************************************************/
-
+    KEEP (*(.init))
+  } =0x90909090
+  .plt            : { *(.plt) }
   .fini           :
   {
-    KEEP (*(SORT_NONE(.fini)))
-  }
+    KEEP (*(.fini))
+  } =0x90909090
   PROVIDE (__etext = .);
   PROVIDE (_etext = .);
   PROVIDE (etext = .);
 
-  .eh_frame_hdr : { *(.eh_frame_hdr) *(.eh_frame_entry .eh_frame_entry.*) }
-  .eh_frame       : ONLY_IF_RO { KEEP (*(.eh_frame)) *(.eh_frame.*) }
-  .gcc_except_table   : ONLY_IF_RO { *(.gcc_except_table
-  .gcc_except_table.*) }
-  .gnu_extab   : ONLY_IF_RO { *(.gnu_extab*) }
-  /* These sections are generated by the Sun/Oracle C++ compiler.  */
-  .exception_ranges   : ONLY_IF_RO { *(.exception_ranges
-  .exception_ranges*) }
+  .eh_frame_hdr : { *(.eh_frame_hdr) }
+  .eh_frame       : ONLY_IF_RO { KEEP (*(.eh_frame)) }
+  .gcc_except_table   : ONLY_IF_RO { *(.gcc_except_table .gcc_except_table.*) }
   /* Adjust the address for the data segment.  We want to adjust up to
      the same address within the page on the next page up.  */
-  . = DATA_SEGMENT_ALIGN (CONSTANT (MAXPAGESIZE), CONSTANT (COMMONPAGESIZE));
+  . = ALIGN (CONSTANT (MAXPAGESIZE)) - ((CONSTANT (MAXPAGESIZE) - .) & (CONSTANT (MAXPAGESIZE) - 1)); . = DATA_SEGMENT_ALIGN (CONSTANT (MAXPAGESIZE), CONSTANT (COMMONPAGESIZE));
   /* Exception handling  */
-  .eh_frame       : ONLY_IF_RW { KEEP (*(.eh_frame)) *(.eh_frame.*) }
-  .gnu_extab      : ONLY_IF_RW { *(.gnu_extab) }
+  .eh_frame       : ONLY_IF_RW { KEEP (*(.eh_frame)) }
   .gcc_except_table   : ONLY_IF_RW { *(.gcc_except_table .gcc_except_table.*) }
-  .exception_ranges   : ONLY_IF_RW { *(.exception_ranges .exception_ranges*) }
   /* Thread Local Storage sections  */
   .tdata	  : { *(.tdata .tdata.* .gnu.linkonce.td.*) }
   .tbss		  : { *(.tbss .tbss.* .gnu.linkonce.tb.*) *(.tcommon) }
@@ -127,16 +118,16 @@ SECTIONS
   }
   .init_array     :
   {
-    PROVIDE_HIDDEN (__init_array_start = .);
-    KEEP (*(SORT_BY_INIT_PRIORITY(.init_array.*) SORT_BY_INIT_PRIORITY(.ctors.*)))
-    KEEP (*(.init_array EXCLUDE_FILE (*crtbegin.o *crtbegin?.o *crtend.o *crtend?.o ) .ctors))
-    PROVIDE_HIDDEN (__init_array_end = .);
+     PROVIDE_HIDDEN (__init_array_start = .);
+     KEEP (*(SORT(.init_array.*)))
+     KEEP (*(.init_array))
+     PROVIDE_HIDDEN (__init_array_end = .);
   }
   .fini_array     :
   {
     PROVIDE_HIDDEN (__fini_array_start = .);
-    KEEP (*(SORT_BY_INIT_PRIORITY(.fini_array.*) SORT_BY_INIT_PRIORITY(.dtors.*)))
-    KEEP (*(.fini_array EXCLUDE_FILE (*crtbegin.o *crtbegin?.o *crtend.o *crtend?.o ) .dtors))
+    KEEP (*(.fini_array))
+    KEEP (*(SORT(.fini_array.*)))
     PROVIDE_HIDDEN (__fini_array_end = .);
   }
   .ctors          :
@@ -169,15 +160,16 @@ SECTIONS
     KEEP (*(.dtors))
   }
   .jcr            : { KEEP (*(.jcr)) }
-  .data.rel.ro : { *(.data.rel.ro.local* .gnu.linkonce.d.rel.ro.local.*) *(.data.rel.ro .data.rel.ro.* .gnu.linkonce.d.rel.ro.*) }
+  .data.rel.ro : { *(.data.rel.ro.local* .gnu.linkonce.d.rel.ro.local.*) *(.data.rel.ro* .gnu.linkonce.d.rel.ro.*) }
   .dynamic        : { *(.dynamic) }
-  .got            : { *(.got) *(.igot) }
-  . = DATA_SEGMENT_RELRO_END (SIZEOF (.got.plt) >= 24 ? 24 : 0, .);
-  .got.plt        : { *(.got.plt)  *(.igot.plt) }
+  .got            : { *(.got) }
+  . = DATA_SEGMENT_RELRO_END (24, .);
 
+  .got.plt        : { *(.got.plt) }
+/*********************************************************************************/
+/* ºΩº« ¿ÁπËƒ°∑Œ ¿Œ«ÿ ¿Ãµøµ» ∫Œ∫– */
   _edata = .; PROVIDE (edata = .);
-  . = .;
-  
+/*********************************************************************************/
   .lbss   :
   {
     *(.dynlbss)
@@ -185,7 +177,6 @@ SECTIONS
     *(LARGE_COMMON)
   }
   . = ALIGN(64 / 8);
-  . = SEGMENT_START("ldata-segment", .);
   .lrodata   ALIGN(CONSTANT (MAXPAGESIZE)) + (. & (CONSTANT (MAXPAGESIZE) - 1)) :
   {
     *(.lrodata .lrodata.* .gnu.linkonce.lr.*)
@@ -221,7 +212,7 @@ SECTIONS
   /* DWARF 2 */
   .debug_info     0 : { *(.debug_info .gnu.linkonce.wi.*) }
   .debug_abbrev   0 : { *(.debug_abbrev) }
-  .debug_line     0 : { *(.debug_line .debug_line.* .debug_line_end ) }
+  .debug_line     0 : { *(.debug_line) }
   .debug_frame    0 : { *(.debug_frame) }
   .debug_str      0 : { *(.debug_str) }
   .debug_loc      0 : { *(.debug_loc) }
@@ -234,9 +225,6 @@ SECTIONS
   /* DWARF 3 */
   .debug_pubtypes 0 : { *(.debug_pubtypes) }
   .debug_ranges   0 : { *(.debug_ranges) }
-  /* DWARF Extension.  */
-  .debug_macro    0 : { *(.debug_macro) }
-  .debug_addr     0 : { *(.debug_addr) }
   .gnu.attributes 0 : { KEEP (*(.gnu.attributes)) }
-  /DISCARD/ : { *(.note.GNU-stack) *(.gnu_debuglink) *(.gnu.lto_*) }
+  /DISCARD/ : { *(.note.GNU-stack) *(.gnu_debuglink) }
 }

@@ -6,7 +6,7 @@ SECTION .text
 jmp 0x9000:START
 
 SECTORCOUNT:	dw	0x0000
-TOTALSECTORCOUNT:	dw 0x02
+TOTALSECTORCOUNT:	dw 0x28
 KERNEL32SECTORCOUNT: dw 0x02
 
 START:
@@ -166,13 +166,11 @@ READEND:
 
 	;//과제 2-1. RAM 크기 출력
 
-.st:
 	mov eax, 0E820h
 	mov edx, 534d4150h
     int 15h
 	
-	mov eax, dword[es:di+12]
-	;mov ax, cx
+	mov ax, cx
 
 	mov dl, 0x0A
 	div dl
