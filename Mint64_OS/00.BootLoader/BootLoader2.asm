@@ -6,7 +6,7 @@ SECTION .text
 jmp 0x9000:START
 
 SECTORCOUNT:	dw	0x0000
-TOTALSECTORCOUNT:	dw 0x02
+TOTALSECTORCOUNT:	dw 0x28
 KERNEL32SECTORCOUNT: dw 0x02
 
 START:
@@ -165,12 +165,14 @@ READEND:
 	add	sp, 6
 
 	;//과제 2-1. RAM 크기 출력
+
 	mov eax, 0E820h
 	mov edx, 534d4150h
     int 15h
+	
+	mov ax, cx
 
 	mov dl, 0x0A
-	mov ax, cx
 	div dl
 	add al, 30h
 	mov [RAMSIZEMESSAGE + 11], al
@@ -185,6 +187,7 @@ READEND:
 	push 0
 	call PRINTMESSAGE
 	add	sp, 6
+
 
 	jmp 0x1000:0x0000
 
