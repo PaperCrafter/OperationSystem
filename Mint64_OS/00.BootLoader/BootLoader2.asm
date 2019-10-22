@@ -166,11 +166,13 @@ READEND:
 
 	;//과제 2-1. RAM 크기 출력
 
+.st:
 	mov eax, 0E820h
 	mov edx, 534d4150h
     int 15h
 	
-	mov ax, cx
+	mov eax, dword[es:di+12]
+	;mov ax, cx
 
 	mov dl, 0x0A
 	div dl
@@ -183,6 +185,7 @@ READEND:
 	mov [RAMSIZEMESSAGE + 10], al
 
 	push RAMSIZEMESSAGE
+	push 3
 	push 0
 	call PRINTMESSAGE
 	add	sp, 6
