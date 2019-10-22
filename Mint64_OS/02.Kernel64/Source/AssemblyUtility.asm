@@ -1,17 +1,18 @@
-[BITS 64]           
-SECTION .text       
+
+[BITS 64]         
+
+SECTION .text     
 
 global kInPortByte, kOutPortByte, kLoadGDTR, kLoadTR, kLoadIDTR
 global kEnableInterrupt, kDisableInterrupt, kReadRFLAGS
 
-kInPortByte:
-    push rdx       
-                   
 
-    mov rdx, rdi   
+kInPortByte:
+    push rdx                
+
+    mov rdx, rdi    
     mov rax, 0      
-    in al, dx       
-                    
+    in al, dx                           
 
     pop rdx         
     ret             
@@ -23,22 +24,22 @@ kOutPortByte:
 
     mov rdx, rdi   
     mov rax, rsi   
-    out dx, al     
-                   
+    out dx, al                        
 
-    pop rax        
+    pop rax         
     pop rdx
-    ret            
+    ret             
 
 
 kLoadGDTR:
-    lgdt [ rdi ]   
-                   
+    lgdt [ rdi ]    
+                    
     ret
 
+
 kLoadTR:
-    ltr di         
-                   
+    ltr di      
+                  
     ret
 
 kLoadIDTR:
@@ -47,16 +48,15 @@ kLoadIDTR:
     ret
 
 kEnableInterrupt:
-    sti         
+    sti     
     ret
-
 
 kDisableInterrupt:
     cli            
     ret
 
 kReadRFLAGS:
-    pushfq               
-    pop rax              
-                         
+    pushfq              
+    pop rax             
+                           
     ret

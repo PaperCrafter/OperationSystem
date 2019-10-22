@@ -1,3 +1,4 @@
+
 #include "Descriptor.h"
 #include "Utility.h"
 #include "ISR.h"
@@ -10,15 +11,15 @@ void kInitializeGDTTableAndTSS( void )
     TSSSEGMENT* pstTSS;
     int i;
 
-
+    
     pstGDTR = ( GDTR* ) GDTR_STARTADDRESS;
     pstEntry = ( GDTENTRY8* ) ( GDTR_STARTADDRESS + sizeof( GDTR ) );
     pstGDTR->wLimit = GDT_TABLESIZE - 1;
     pstGDTR->qwBaseAddress = ( QWORD ) pstEntry;
-
+    
     pstTSS = ( TSSSEGMENT* ) ( ( QWORD ) pstEntry + GDT_TABLESIZE );
 
-
+    
     kSetGDTEntry8( &( pstEntry[ 0 ] ), 0, 0, 0, 0, 0 );
     kSetGDTEntry8( &( pstEntry[ 1 ] ), 0, 0xFFFFF, GDT_FLAGS_UPPER_CODE,
             GDT_FLAGS_LOWER_KERNELCODE, GDT_TYPE_CODE );
@@ -28,7 +29,7 @@ void kInitializeGDTTableAndTSS( void )
             sizeof( TSSSEGMENT ) - 1, GDT_FLAGS_UPPER_TSS, GDT_FLAGS_LOWER_TSS,
             GDT_TYPE_TSS );
 
-
+    
     kInitializeTSSSegment( pstTSS );
 }
 
@@ -65,12 +66,10 @@ void kInitializeTSSSegment( TSSSEGMENT* pstTSS )
 {
     kMemSet( pstTSS, 0, sizeof( TSSSEGMENT ) );
     pstTSS->qwIST[ 0 ] = IST_STARTADDRESS + IST_SIZE;
-
+    
     pstTSS->wIOMapBaseAddress = 0xFFFF;
 }
 
-
-//  IDT
 
 void kInitializeIDTTables( void )
 {
@@ -80,12 +79,12 @@ void kInitializeIDTTables( void )
 
     
     pstIDTR = ( IDTR* ) IDTR_STARTADDRESS;
-    
+ 
     pstEntry = ( IDTENTRY* ) ( IDTR_STARTADDRESS + sizeof( IDTR ) );
     pstIDTR->qwBaseAddress = ( QWORD ) pstEntry;
     pstIDTR->wLimit = IDT_TABLESIZE - 1;
 
-    
+ 
     kSetIDTEntry( &( pstEntry[ 0 ] ), kISRDivideError, 0x08, IDT_FLAGS_IST1,
         IDT_FLAGS_KERNEL, IDT_TYPE_INTERRUPT );
     kSetIDTEntry( &( pstEntry[ 1 ] ), kISRDebug, 0x08, IDT_FLAGS_IST1,
@@ -134,8 +133,7 @@ void kInitializeIDTTables( void )
         kSetIDTEntry( &( pstEntry[ i ] ), kISRETCException, 0x08, IDT_FLAGS_IST1,
             IDT_FLAGS_KERNEL, IDT_TYPE_INTERRUPT );
     }
-    
-    // ISR
+   
     
     kSetIDTEntry( &( pstEntry[ 32 ] ), kISRTimer, 0x08, IDT_FLAGS_IST1,
         IDT_FLAGS_KERNEL, IDT_TYPE_INTERRUPT );

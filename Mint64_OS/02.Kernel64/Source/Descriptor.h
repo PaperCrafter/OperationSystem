@@ -53,6 +53,7 @@
 
 
 // IDT
+
 #define IDT_TYPE_INTERRUPT      0x0E
 #define IDT_TYPE_TRAP           0x0F
 #define IDT_FLAGS_DPL0          0x00
@@ -63,10 +64,8 @@
 #define IDT_FLAGS_IST0          0
 #define IDT_FLAGS_IST1          1
 
-
 #define IDT_FLAGS_KERNEL        ( IDT_FLAGS_DPL0 | IDT_FLAGS_P )
 #define IDT_FLAGS_USER          ( IDT_FLAGS_DPL3 | IDT_FLAGS_P )
-
 
 #define IDT_MAXENTRYCOUNT       100
 
@@ -83,15 +82,14 @@
 #define IST_SIZE                0x100000
 
 
-
+// struct
 #pragma pack( push, 1 )
-
 
 typedef struct kGDTRStruct
 {
     WORD wLimit;
     QWORD qwBaseAddress;
-    
+
     WORD wPading;
     DWORD dwPading;
 } GDTR, IDTR;
@@ -102,9 +100,9 @@ typedef struct kGDTEntry8Struct
     WORD wLowerLimit;
     WORD wLowerBaseAddress;
     BYTE bUpperBaseAddress1;
-    
+
     BYTE bTypeAndLowerFlag;
-    
+
     BYTE bUpperLimitAndUpperFlag;
     BYTE bUpperBaseAddress2;
 } GDTENTRY8;
@@ -124,7 +122,7 @@ typedef struct kGDTEntry16Struct
     DWORD dwReserved;
 } GDTENTRY16;
 
-// TSS Data
+
 typedef struct kTSSDataStruct
 {
     DWORD dwReserved1;
@@ -153,6 +151,7 @@ typedef struct kIDTEntryStruct
 #pragma pack ( pop )
 
 
+//function
 void kInitializeGDTTableAndTSS( void );
 void kSetGDTEntry8( GDTENTRY8* pstEntry, DWORD dwBaseAddress, DWORD dwLimit,
         BYTE bUpperFlags, BYTE bLowerFlags, BYTE bType );
@@ -163,6 +162,4 @@ void kInitializeTSSSegment( TSSSEGMENT* pstTSS );
 void kInitializeIDTTables( void );
 void kSetIDTEntry( IDTENTRY* pstEntry, void* pvHandler, WORD wSelector, 
         BYTE bIST, BYTE bFlags, BYTE bType );
-void kDummyHandler( void );
-
 #endif

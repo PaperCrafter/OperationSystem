@@ -1,17 +1,15 @@
+
 #ifndef __KEYBOARD_H__
 #define __KEYBOARD_H__
 
 #include "Types.h"
 
-// key macro
 #define KEY_SKIPCOUNTFORPAUSE       2
 
-// key flag
 #define KEY_FLAGS_UP             0x00
 #define KEY_FLAGS_DOWN           0x01
 #define KEY_FLAGS_EXTENDEDKEY    0x02
 
-// key table macro
 #define KEY_MAPPINGTABLEMAXCOUNT    89
 
 #define KEY_NONE        0x00
@@ -53,27 +51,42 @@
 #define KEY_F12         0x9F
 #define KEY_PAUSE       0xA0
 
-// struct
+
+#define KEY_MAXQUEUECOUNT   100
+
+
 #pragma pack( push, 1 )
 
 typedef struct kKeyMappingEntryStruct
 {
-    BYTE bNormalCode;  
+    BYTE bNormalCode;
+
     BYTE bCombinedCode;
 } KEYMAPPINGENTRY;
+
 
 typedef struct kKeyboardManagerStruct
 {
     BOOL bShiftDown;
     BOOL bCapsLockOn;
     BOOL bNumLockOn;
-    BOOL bScrollLockOn;    
+    BOOL bScrollLockOn;
 
     BOOL bExtendedCodeIn;
     int iSkipCountForPause;
 } KEYBOARDMANAGER;
 
+typedef struct kKeyDataStruct
+{
+    BYTE bScanCode;
+    BYTE bASCIICode;   
+    BYTE bFlags;
+} KEYDATA;
+
 #pragma pack( pop )
+
+
+//function
 BOOL kIsOutputBufferFull( void );
 BOOL kIsInputBufferFull( void );
 BOOL kActivateKeyboard( void );
@@ -87,6 +100,10 @@ BOOL kIsNumberPadScanCode( BYTE bScanCode );
 BOOL kIsUseCombinedCode( BOOL bScanCode );
 void UpdateCombinationKeyStatusAndLED( BYTE bScanCode );
 BOOL kConvertScanCodeToASCIICode( BYTE bScanCode, BYTE* pbASCIICode, BOOL* pbFlags );
+BOOL kInitializeKeyboard( void );
+BOOL kConvertScanCodeAndPutQueue( BYTE bScanCode );
+BOOL kGetKeyFromKeyQueue( KEYDATA* pstData );
+BOOL kWaitForACKAndPutOtherScanCode( void );
 
 #endif /*__KEYBOARD_H__*/
 

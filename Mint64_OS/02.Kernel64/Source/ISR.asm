@@ -1,6 +1,7 @@
-[BITS 64]           
 
-SECTION .text       
+[BITS 64]          
+
+SECTION .text      
 
 extern kCommonExceptionHandler, kCommonInterruptHandler, kKeyboardHandler
 
@@ -11,13 +12,11 @@ global kISRCoprocessorSegmentOverrun, kISRInvalidTSS, kISRSegmentNotPresent
 global kISRStackSegmentFault, kISRGeneralProtection, kISRPageFault, kISR15
 global kISRFPUError, kISRAlignmentCheck, kISRMachineCheck, kISRSIMDError, kISRETCException
 
-
 global kISRTimer, kISRKeyboard, kISRSlavePIC, kISRSerial2, kISRSerial1, kISRParallel2
 global kISRFloppy, kISRParallel1, kISRRTC, kISRReserved, kISRNotUsed1, kISRNotUsed2
 global kISRMouse, kISRCoprocessor, kISRHDD1, kISRHDD2, kISRETCInterrupt
 
-
-%macro KSAVECONTEXT 0       
+%macro KSAVECONTEXT 0      
     
     push rbp
     mov rbp, rsp
@@ -42,14 +41,13 @@ global kISRMouse, kISRCoprocessor, kISRHDD1, kISRHDD2, kISRETCInterrupt
     push rax
     push fs
     push gs
-
     
-    mov ax, 0x10    
-    mov ds, ax      
-    mov es, ax      
+    mov ax, 0x10   
+    mov ds, ax     
+    mov es, ax     
     mov gs, ax
     mov fs, ax
-%endmacro           
+%endmacro          
 
 
 %macro KLOADCONTEXT 0   
@@ -78,10 +76,11 @@ global kISRMouse, kISRCoprocessor, kISRHDD1, kISRHDD2, kISRETCInterrupt
     pop rbp
 %endmacro       
 
+
 ; #0, Divide Error ISR
 kISRDivideError:
     KSAVECONTEXT    
-
+    
     mov rdi, 0
     call kCommonExceptionHandler
 
@@ -90,8 +89,8 @@ kISRDivideError:
 
 ; #1, Debug ISR
 kISRDebug:
-    KSAVECONTEXT    
-   
+    KSAVECONTEXT   
+    
     mov rdi, 1
     call kCommonExceptionHandler
 
@@ -101,8 +100,7 @@ kISRDebug:
 ; #2, NMI ISR
 kISRNMI:
     KSAVECONTEXT    
-
-   
+    
     mov rdi, 2
     call kCommonExceptionHandler
 
@@ -116,36 +114,33 @@ kISRBreakPoint:
     mov rdi, 3
     call kCommonExceptionHandler
 
-    KLOADCONTEXT    
-    iretq           
+    KLOADCONTEXT   
+    iretq          
 
 ; #4, Overflow ISR
 kISROverflow:
     KSAVECONTEXT    
-
     
     mov rdi, 4
     call kCommonExceptionHandler
 
-    KLOADCONTEXT    
-    iretq           
+    KLOADCONTEXT 
+    iretq        
 
 ; #5, Bound Range Exceeded ISR
 kISRBoundRangeExceeded:
-    KSAVECONTEXT    
-
+    KSAVECONTEXT 
     
     mov rdi, 5
     call kCommonExceptionHandler
 
-    KLOADCONTEXT    
-    iretq           
+    KLOADCONTEXT 
+    iretq        
 
 ; #6, Invalid Opcode ISR
 kISRInvalidOpcode:
-    KSAVECONTEXT    
+    KSAVECONTEXT   
 
-    
     mov rdi, 6
     call kCommonExceptionHandler
 
@@ -155,18 +150,16 @@ kISRInvalidOpcode:
 ; #7, Device Not Available ISR
 kISRDeviceNotAvailable:
     KSAVECONTEXT    
-
     
     mov rdi, 7
     call kCommonExceptionHandler
 
-    KLOADCONTEXT    
-    iretq           
+    KLOADCONTEXT   
+    iretq          
 
 ; #8, Double Fault ISR
 kISRDoubleFault:
     KSAVECONTEXT    
-
     
     mov rdi, 8
     mov rsi, qword [ rbp + 8 ]
@@ -179,57 +172,52 @@ kISRDoubleFault:
 ; #9, Coprocessor Segment Overrun ISR
 kISRCoprocessorSegmentOverrun:
     KSAVECONTEXT    
-
     
     mov rdi, 9
     call kCommonExceptionHandler
 
-    KLOADCONTEXT    
-    iretq           
+    KLOADCONTEXT   
+    iretq          
 
 ; #10, Invalid TSS ISR
 kISRInvalidTSS:
-    KSAVECONTEXT    
-
-
+    KSAVECONTEXT   
+    
     mov rdi, 10
     mov rsi, qword [ rbp + 8 ]
     call kCommonExceptionHandler
 
-    KLOADCONTEXT    
-    add rsp, 8      
-    iretq           
+    KLOADCONTEXT  
+    add rsp, 8    
+    iretq         
 
 ; #11, Segment Not Present ISR
 kISRSegmentNotPresent:
     KSAVECONTEXT    
-
     
     mov rdi, 11
     mov rsi, qword [ rbp + 8 ]
     call kCommonExceptionHandler
 
-    KLOADCONTEXT    
-    add rsp, 8      
-    iretq           
+    KLOADCONTEXT  
+    add rsp, 8    
+    iretq         
 
 ; #12, Stack Segment Fault ISR
 kISRStackSegmentFault:
-    KSAVECONTEXT    
+    KSAVECONTEXT  
 
-    
     mov rdi, 12
     mov rsi, qword [ rbp + 8 ]
     call kCommonExceptionHandler
 
-    KLOADCONTEXT    
-    add rsp, 8      
-    iretq           
+    KLOADCONTEXT   
+    add rsp, 8     
+    iretq          
 
 ; #13, General Protection ISR
 kISRGeneralProtection:
-    KSAVECONTEXT    
-
+    KSAVECONTEXT   
     
     mov rdi, 13
     mov rsi, qword [ rbp + 8 ]
@@ -242,31 +230,28 @@ kISRGeneralProtection:
 ; #14, Page Fault ISR
 kISRPageFault:
     KSAVECONTEXT    
-
-    
+   
     mov rdi, 14
     mov rsi, qword [ rbp + 8 ]
     call kCommonExceptionHandler
 
-    KLOADCONTEXT    
-    add rsp, 8      
-    iretq           
+    KLOADCONTEXT   
+    add rsp, 8     
+    iretq          
 
 ; #15, Reserved ISR
 kISR15:
-    KSAVECONTEXT    
-
+    KSAVECONTEXT   
     
     mov rdi, 15
     call kCommonExceptionHandler
 
-    KLOADCONTEXT    
-    iretq           
+    KLOADCONTEXT   
+    iretq          
 
 ; #16, FPU Error ISR
 kISRFPUError:
     KSAVECONTEXT    
-
     
     mov rdi, 16
     call kCommonExceptionHandler
@@ -276,22 +261,20 @@ kISRFPUError:
 
 ; #17, Alignment Check ISR
 kISRAlignmentCheck:
-    KSAVECONTEXT    
+    KSAVECONTEXT   
 
-    
     mov rdi, 17
     mov rsi, qword [ rbp + 8 ]
     call kCommonExceptionHandler
 
-    KLOADCONTEXT    
-    add rsp, 8      
-    iretq           
+    KLOADCONTEXT  
+    add rsp, 8    
+    iretq         
 
 ; #18, Machine Check ISR
 kISRMachineCheck:
-    KSAVECONTEXT    
+    KSAVECONTEXT  
 
-    
     mov rdi, 18
     call kCommonExceptionHandler
 
@@ -302,129 +285,128 @@ kISRMachineCheck:
 kISRSIMDError:
     KSAVECONTEXT    
 
-    
     mov rdi, 19
     call kCommonExceptionHandler
 
-    KLOADCONTEXT    
-    iretq           
+    KLOADCONTEXT   
+    iretq          
 
 ; #20~#31, Reserved ISR
 kISRETCException:
-    KSAVECONTEXT    
+    KSAVECONTEXT   
 
-    
     mov rdi, 20
     call kCommonExceptionHandler
 
-    KLOADCONTEXT    
-    iretq           
+    KLOADCONTEXT   
+    iretq          
 
 
-; #32
+; handler
+
+; #32, timer
 kISRTimer:
-    KSAVECONTEXT    
-   
+    KSAVECONTEXT   
+
     mov rdi, 32
     call kCommonInterruptHandler
 
     KLOADCONTEXT    
     iretq           
 
-; #33
+; #33, keyboad
 kISRKeyboard:
-    KSAVECONTEXT 
-
-    
+    KSAVECONTEXT   
+        
     mov rdi, 33
     call kKeyboardHandler
 
-    KLOADCONTEXT 
-    iretq        
+    KLOADCONTEXT    
+    iretq           
 
-; #34
+; #34, slave PIC
 kISRSlavePIC:
     KSAVECONTEXT    
-
+        
     mov rdi, 34
     call kCommonInterruptHandler
 
     KLOADCONTEXT   
     iretq          
 
-; #35
+; #35, serial 2
 kISRSerial2:
     KSAVECONTEXT    
-    
+
     mov rdi, 35
     call kCommonInterruptHandler
 
     KLOADCONTEXT  
     iretq         
 
-; #36
+; #36, serial 1
 kISRSerial1:
-    KSAVECONTEXT
+    KSAVECONTEXT  
 
     mov rdi, 36
-    call kCommonInterruptHandler
-
-    KLOADCONTEXT   
-    iretq          
-
-; #37
-kISRParallel2:
-    KSAVECONTEXT   
-   
-    mov rdi, 37
     call kCommonInterruptHandler
 
     KLOADCONTEXT  
     iretq         
 
-; #38
+; #37, parellel 2
+kISRParallel2:
+    KSAVECONTEXT    
+    
+    mov rdi, 37
+    call kCommonInterruptHandler
+
+    KLOADCONTEXT    
+    iretq           
+
+; #38, floppy
 kISRFloppy:
-    KSAVECONTEXT   
- 
+    KSAVECONTEXT    
+    
     mov rdi, 38
     call kCommonInterruptHandler
 
     KLOADCONTEXT    
     iretq           
 
-; #39
+; #39, parallel 1
 kISRParallel1:
-    KSAVECONTEXT  
-   
+    KSAVECONTEXT   
+
     mov rdi, 39
     call kCommonInterruptHandler
 
-    KLOADCONTEXT    
-    iretq           
+    KLOADCONTEXT  
+    iretq         
 
 ; #40, RTC ISR
 kISRRTC:
-    KSAVECONTEXT    
-
-    mov rdi, 40
-    call kCommonInterruptHandler
-
-    KLOADCONTEXT   
-    iretq          
-
-; #41
-kISRReserved:
-    KSAVECONTEXT    
+    KSAVECONTEXT  
    
-    mov rdi, 41
+    mov rdi, 40
     call kCommonInterruptHandler
 
     KLOADCONTEXT    
     iretq           
 
-; #42
+; #41 
+kISRReserved:
+    KSAVECONTEXT   
+    
+    mov rdi, 41
+    call kCommonInterruptHandler
+
+    KLOADCONTEXT  
+    iretq         
+
+; #42, not use
 kISRNotUsed1:
-    KSAVECONTEXT  
+    KSAVECONTEXT    
     
     mov rdi, 42
     call kCommonInterruptHandler
@@ -432,37 +414,37 @@ kISRNotUsed1:
     KLOADCONTEXT   
     iretq          
 
-; #43
+; #43, not use 2
 kISRNotUsed2:
-    KSAVECONTEXT    
-   
+    KSAVECONTEXT  
+    
     mov rdi, 43
     call kCommonInterruptHandler
 
-    KLOADCONTEXT   
-    iretq          
+    KLOADCONTEXT 
+    iretq        
 
-; #44
+; #44, mouse ISR
 kISRMouse:
     KSAVECONTEXT   
     
     mov rdi, 44
     call kCommonInterruptHandler
 
-    KLOADCONTEXT   
-    iretq          
+    KLOADCONTEXT  
+    iretq         
 
-; #45
+; #45, processor ISR
 kISRCoprocessor:
-    KSAVECONTEXT    
+    KSAVECONTEXT   
     
     mov rdi, 45
     call kCommonInterruptHandler
 
-    KLOADCONTEXT   
-    iretq          
+    KLOADCONTEXT  
+    iretq         
 
-; #46
+; #46, HDD 1 ISR
 kISRHDD1:
     KSAVECONTEXT    
     
@@ -472,10 +454,10 @@ kISRHDD1:
     KLOADCONTEXT   
     iretq          
 
-; #47
+; #47, HDD 2 ISR
 kISRHDD2:
-    KSAVECONTEXT    
-
+    KSAVECONTEXT  
+    
     mov rdi, 47
     call kCommonInterruptHandler
 
@@ -484,10 +466,10 @@ kISRHDD2:
 
 ; #48 
 kISRETCInterrupt:
-    KSAVECONTEXT    
+    KSAVECONTEXT 
     
     mov rdi, 48
     call kCommonInterruptHandler
 
-    KLOADCONTEXT    
-    iretq          
+    KLOADCONTEXT  
+    iretq         
