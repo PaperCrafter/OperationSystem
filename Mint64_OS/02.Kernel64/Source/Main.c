@@ -30,7 +30,7 @@ void Main( void )
     kPrintString(0, 17, "Read from 0x1ff000 [  ]");
     readFrom(0x1ff000, 17);
     //write access to 0x1ff000
-    kPrintString(0, 18, "Write to 0x1ff000 [  ]");
+    //kPrintString(0, 18, "Write to 0x1ff000 [  ]");
     //writeTo(0x1ff000, 18);
     
     kInitializeConsole( 0, 19 );    
