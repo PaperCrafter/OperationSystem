@@ -3,7 +3,7 @@
 
 SECTION .text      
 
-extern kCommonExceptionHandler, kCommonInterruptHandler, kKeyboardHandler
+extern kCommonExceptionHandler, kPageFaultExceptionHandler, kProtectionFaultExceptionHandler, kCommonInterruptHandler, kKeyboardHandler
 
 
 global kISRDivideError, kISRDebug, kISRNMI, kISRBreakPoint, kISROverflow
@@ -17,7 +17,7 @@ global kISRFloppy, kISRParallel1, kISRRTC, kISRReserved, kISRNotUsed1, kISRNotUs
 global kISRMouse, kISRCoprocessor, kISRHDD1, kISRHDD2, kISRETCInterrupt
 
 %macro KSAVECONTEXT 0      
-    
+
     push rbp
     mov rbp, rsp
     push rax
@@ -41,6 +41,8 @@ global kISRMouse, kISRCoprocessor, kISRHDD1, kISRHDD2, kISRETCInterrupt
     push rax
     push fs
     push gs
+    ;show exception register
+    mov rdi, cr2
     
     mov ax, 0x10   
     mov ds, ax     
@@ -205,7 +207,7 @@ kISRSegmentNotPresent:
 
 ; #12, Stack Segment Fault ISR
 kISRStackSegmentFault:
-    KSAVECONTEXT  
+    KSAVECONTEXT 
 
     mov rdi, 12
     mov rsi, qword [ rbp + 8 ]
@@ -219,9 +221,9 @@ kISRStackSegmentFault:
 kISRGeneralProtection:
     KSAVECONTEXT   
     
-    mov rdi, 13
+    ;mov rdi, 13
     mov rsi, qword [ rbp + 8 ]
-    call kCommonExceptionHandler
+    call kProtectionFaultExceptionHandler
 
     KLOADCONTEXT    
     add rsp, 8      
@@ -230,10 +232,10 @@ kISRGeneralProtection:
 ; #14, Page Fault ISR
 kISRPageFault:
     KSAVECONTEXT    
-   
-    mov rdi, 14
+
+    ;mov rdi, 14
     mov rsi, qword [ rbp + 8 ]
-    call kCommonExceptionHandler
+    call kPageFaultExceptionHandler
 
     KLOADCONTEXT   
     add rsp, 8     
@@ -473,3 +475,4 @@ kISRETCInterrupt:
 
     KLOADCONTEXT  
     iretq         
+

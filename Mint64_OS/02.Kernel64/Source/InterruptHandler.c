@@ -20,6 +20,54 @@ void kCommonExceptionHandler( int iVectorNumber, QWORD qwErrorCode )
     while( 1 ) ;
 }
 
+void kPageFaultExceptionHandler( int iVectorNumber, QWORD qwErrorCode )
+{
+    int iCursorX, iCursorY;
+    kGetCursor( &iCursorX, &iCursorY );
+
+    char vcBuffer[ 9 ] = { '0', 'x', '0', '0', '0', '0', '0', '0'};
+    int i = 7;
+    
+    while(iVectorNumber >= 1){
+        if(iVectorNumber%16 >= 10) vcBuffer[i] = 'A' + iVectorNumber%16 - 10;
+        else vcBuffer[i] = '0' + iVectorNumber%16;
+        iVectorNumber = iVectorNumber/16;
+        i--;
+    }
+
+    kPrintStringXY( 0, iCursorY-4, "====================================================" );
+    kPrintStringXY( 0, iCursorY-3, "                 Page Fault Occurs~!!!!             " );
+    kPrintStringXY( 0, iCursorY-2, "                   Address:                         " );
+    kPrintStringXY( 27, iCursorY-2, vcBuffer );
+    kPrintStringXY( 0, iCursorY-1, "====================================================" );
+
+    while( 1 ) ;
+}
+
+void kProtectionFaultExceptionHandler( int iVectorNumber, QWORD qwErrorCode )
+{
+    int iCursorX, iCursorY;
+    kGetCursor( &iCursorX, &iCursorY );
+
+    char vcBuffer[ 9 ] = { '0', 'x', '0', '0', '0', '0', '0', '0'};
+    int i = 7;
+    
+    while(iVectorNumber >= 1){
+        if(iVectorNumber%16 >= 10) vcBuffer[i] = 'A' + iVectorNumber%16 - 10;
+        else vcBuffer[i] = '0' + iVectorNumber%16;
+        iVectorNumber = iVectorNumber/16;
+        i--;
+    }
+    
+    kPrintStringXY( 0, iCursorY-4, "====================================================" );
+    kPrintStringXY( 0, iCursorY-3, "                 Protection fault Occurs~!          " );
+    kPrintStringXY( 0, iCursorY-2, "                   Address:                        " );
+    kPrintStringXY( 27, iCursorY-2, vcBuffer );
+    kPrintStringXY( 0, iCursorY-1, "====================================================" );
+
+    while( 1 ) ;
+}
+
 
 void kCommonInterruptHandler( int iVectorNumber )
 {

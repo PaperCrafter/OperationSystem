@@ -19,7 +19,7 @@ void Main( void )
     //print with changedPrintString
     changedPrintString(0, 14, "This message is printed through the video memory relocated to 0xAB8000");
     
-    /*
+    
     //read access to 0x1fe000
     kPrintString(0, 15, "Read from 0x1fe000 [  ]");
     readFrom(0x1fe000, 15);
@@ -32,7 +32,6 @@ void Main( void )
     //write access to 0x1ff000
     //kPrintString(0, 18, "Write to 0x1ff000 [  ]");
     //writeTo(0x1ff000, 18);
-    */	
     
     kInitializeConsole( 0, 19 );    
     //kPrintf( "Switch To IA-32e Mode Success~!!\n" );
@@ -85,6 +84,10 @@ void Main( void )
     kEnableInterrupt();
     kSetCursor( 45, --iCursorY );
     kPrintf( "Pass\n" );
+
+
+    //kPrintString(0, 18, "Write to 0x1ff000 [  ]");
+    //writeTo(0x1ff000, 18);
 
     kStartConsoleShell();
 }

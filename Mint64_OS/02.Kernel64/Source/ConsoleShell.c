@@ -12,7 +12,9 @@ SHELLCOMMANDENTRY gs_vstCommandTable[] =
         { "totalram", "Show Total RAM Size", kShowTotalRAMSize },
         { "strtod", "String To Decial/Hex Convert", kStringToDecimalHexTest },
         { "shutdown", "Shutdown And Reboot OS", kShutdown },
-};                                     
+        { "raisefault", "Rais Fault at 0x1ff000", kRaisFault}
+};      
+
 
 // roof
 void kStartConsoleShell( void )
@@ -20,11 +22,20 @@ void kStartConsoleShell( void )
     char vcCommandBuffer[ CONSOLESHELL_MAXCOMMANDBUFFERCOUNT ];
     int iCommandBufferIndex = 0;
     BYTE bKey;
+    //int iCursorX, iCursorY;
     int iCursorX, iCursorY;
-    
+
     //prompt
     kPrintf( CONSOLESHELL_PROMPTMESSAGE );
     
+    // hw3 variables ============================================================
+        char historyBuffer[10][ CONSOLESHELL_MAXCOMMANDBUFFERCOUNT ];
+        int historySaveCount = -1;
+        int historyCount = 0;
+    // ============================================================        
+    
+        
+        
     while( 1 )
     {        
         bKey = kGetCh();
@@ -48,6 +59,21 @@ void kStartConsoleShell( void )
             {
                 
                 vcCommandBuffer[ iCommandBufferIndex ] = '\0';
+                
+                //hw3 ============================================================
+                int t=0;
+                historySaveCount++;                
+                if(historySaveCount>9) historySaveCount=0; 
+                historyCount = historySaveCount;
+                               
+                while(vcCommandBuffer[t] != '\0'){
+                historyBuffer[historySaveCount][t] = vcCommandBuffer[t];
+                t++;
+                }
+                               
+                historyBuffer[historySaveCount][t] = '\0';
+                // ============================================================
+                
                 kExecuteCommand( vcCommandBuffer );
             }            
             
@@ -62,6 +88,32 @@ void kStartConsoleShell( void )
         {
             ;
         }
+        
+        // HW3 ============================================================
+        else if( bKey == KEY_UP )
+        {
+        	if( historySaveCount >= 0 )
+        	{    
+        	kGetCursor( &iCursorX, &iCursorY );
+        	while (iCursorX !=0 ){
+        		kPrintStringXY( --iCursorX, iCursorY, " " );
+        	}        	        	         	
+        	kSetCursor( 0, iCursorY );
+        	iCommandBufferIndex = 0;
+        	kPrintf( CONSOLESHELL_PROMPTMESSAGE );
+                		
+        	int t= 0;
+        	while(historyBuffer[historyCount][t] != '\0'){
+        		vcCommandBuffer[iCommandBufferIndex++] = historyBuffer[historyCount][t];
+        		kPrintf( "%c", historyBuffer[historyCount][t++] );
+        	} 
+        	
+        	historyCount--;
+        	if(historyCount < 0) historyCount=historySaveCount;
+        	}
+        }
+        // ============================================================
+        
         else
         {            
             if( bKey == KEY_TAB )
@@ -251,3 +303,14 @@ void kShutdown( const char* pcParamegerBuffer )
     kGetCh();
     kReboot();
 }
+
+void kRaisFault( const char* pcParameterBuffer ){
+    kPrintf( "\n" );
+    kPrintf( "\n");
+    kPrintf( "\n");
+    kPrintf( "\n" );
+    writeTo(0x1ff000, 18);
+}
+
+
+
