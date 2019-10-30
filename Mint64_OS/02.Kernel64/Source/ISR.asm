@@ -53,7 +53,7 @@ global kISRMouse, kISRCoprocessor, kISRHDD1, kISRHDD2, kISRETCInterrupt
 
 
 %macro KLOADCONTEXT 0   
-    
+
     pop gs
     pop fs
     pop rax
@@ -231,15 +231,27 @@ kISRGeneralProtection:
 
 ; #14, Page Fault ISR
 kISRPageFault:
+    pop r8
     KSAVECONTEXT    
-
+    shl r8, 63
+    shr r8, 63
     ;mov rdi, 14
     mov rsi, qword [ rbp + 8 ]
-    call kPageFaultExceptionHandler
+    cmp r8, 1
+    je .e2
+    jmp .e1
 
+.e1:
+    call kPageFaultExceptionHandler
+    jmp .end
+.e2:
+    call kProtectionFaultExceptionHandler
+    jmp .end
+
+.end:
     KLOADCONTEXT   
-    add rsp, 8     
-    iretq          
+    add rsp, 8    
+    iretq         
 
 ; #15, Reserved ISR
 kISR15:

@@ -40,7 +40,10 @@ void kInitializePageTables(void) {
 	dwMappingAddress = 0;
 	for(i = 0; i < PAGE_MAXENTRYCOUNT; i++)
 	{
-		if(i == 511) kSetPageEntryData((pstPTEntry + i), 0, dwMappingAddress, PAGE_FLAGS_P, 0);
+		//pagefault
+		//if(i == 511) kSetPageEntryData((pstPTEntry + i), 0, dwMappingAddress, 0, 0);
+		//protection fault
+		if(i == 511) kSetPageEntryData((pstPTEntry + i), 0, dwMappingAddress, 0, 0);
 		else kSetPageEntryData((pstPTEntry + i), 0, dwMappingAddress, PAGE_FLAGS_DEFAULT, 0);
 		dwMappingAddress += PAGE_TABLESIZE;
 	}
