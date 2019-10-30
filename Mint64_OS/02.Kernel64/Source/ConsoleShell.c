@@ -32,6 +32,8 @@ void kStartConsoleShell( void )
         char historyBuffer[10][ CONSOLESHELL_MAXCOMMANDBUFFERCOUNT ];
         int historySaveCount = -1;
         int historyCount = 0;
+        int historyFull = 0;
+        int historyFirstCheck = 0;
     // ============================================================        
     
         
@@ -61,17 +63,22 @@ void kStartConsoleShell( void )
                 vcCommandBuffer[ iCommandBufferIndex ] = '\0';
                 
                 //hw3 ============================================================
+                
+                // history count
                 int t=0;
-                historySaveCount++;                
+                historySaveCount++;  
+                historyFull++;
                 if(historySaveCount>9) historySaveCount=0; 
                 historyCount = historySaveCount;
-                               
+                
+                // save
                 while(vcCommandBuffer[t] != '\0'){
                 historyBuffer[historySaveCount][t] = vcCommandBuffer[t];
                 t++;
-                }
-                               
+                }                              
                 historyBuffer[historySaveCount][t] = '\0';
+                
+                historyFirstCheck = 0;
                 // ============================================================
                 
                 kExecuteCommand( vcCommandBuffer );
@@ -93,24 +100,64 @@ void kStartConsoleShell( void )
         else if( bKey == KEY_UP )
         {
         	if( historySaveCount >= 0 )
-        	{    
-        	kGetCursor( &iCursorX, &iCursorY );
-        	while (iCursorX !=0 ){
-        		kPrintStringXY( --iCursorX, iCursorY, " " );
-        	}        	        	         	
-        	kSetCursor( 0, iCursorY );
-        	iCommandBufferIndex = 0;
-        	kPrintf( CONSOLESHELL_PROMPTMESSAGE );
-                		
-        	int t= 0;
-        	while(historyBuffer[historyCount][t] != '\0'){
-        		vcCommandBuffer[iCommandBufferIndex++] = historyBuffer[historyCount][t];
-        		kPrintf( "%c", historyBuffer[historyCount][t++] );
-        	} 
-        	
-        	historyCount--;
-        	if(historyCount < 0) historyCount=historySaveCount;
+        	{   
+            	// count
+            	if( historyFirstCheck==1 ) historyCount--;
+            	else historyFirstCheck=1;
+            	
+            	if( historyFull > 9 && historyCount < 0) historyCount=9;
+            	else if(historyCount < 0) historyCount=historySaveCount;
+            	
+            	// clear
+        		kGetCursor( &iCursorX, &iCursorY );
+        		while (iCursorX !=0 ){
+        			kPrintStringXY( --iCursorX, iCursorY, " " );
+        		}   
+        		
+        		// initialize
+        		kSetCursor( 0, iCursorY );
+        		iCommandBufferIndex = 0;
+        		kPrintf( CONSOLESHELL_PROMPTMESSAGE );
+                
+        		// print & copy
+        		int t= 0;
+        		while(historyBuffer[historyCount][t] != '\0'){
+        			vcCommandBuffer[iCommandBufferIndex++] = historyBuffer[historyCount][t];
+        			kPrintf( "%c", historyBuffer[historyCount][t++] );
+        		}         	        	
         	}
+        }
+        
+        else if( bKey == KEY_DOWN )
+        {        	
+        	
+        	if( historySaveCount >= 0 )
+            {   
+        		// count
+        		if( historyFirstCheck==1 ) historyCount++; 
+        		else historyFirstCheck=1;         	
+        		        	
+        		if( historyFull > 9 && historyCount > 9) historyCount=0;
+        		else if( historyFull <= 9 && historyCount > historySaveCount) historyCount=0;
+        		
+        		// clear
+        		kGetCursor( &iCursorX, &iCursorY );
+        		while (iCursorX !=0 ){
+        			kPrintStringXY( --iCursorX, iCursorY, " " );
+        		}
+        		
+        		// initialize
+        		kSetCursor( 0, iCursorY );
+        		iCommandBufferIndex = 0;
+        		kPrintf( CONSOLESHELL_PROMPTMESSAGE );
+        		
+        		// print & copy
+        		int t= 0;
+        		while(historyBuffer[historyCount][t] != '\0'){
+        			vcCommandBuffer[iCommandBufferIndex++] = historyBuffer[historyCount][t];
+        			kPrintf( "%c", historyBuffer[historyCount][t++] );
+            	}             
+            }
         }
         // ============================================================
         
