@@ -12,14 +12,20 @@ SHELLCOMMANDENTRY gs_vstCommandTable[] =
         { "totalram", "Show Total RAM Size", kShowTotalRAMSize },
         { "strtod", "String To Decial/Hex Convert", kStringToDecimalHexTest },
         { "shutdown", "Shutdown And Reboot OS", kShutdown },
-        { "raisefault", "Rais Fault at 0x1ff000", kRaisFault}
+        { "raisefault", "Rais Fault at 0x1ff000", kRaisFault},        
+        { "a", "testing", kStringToDecimalHexTest },
+		{ "ab", "testing", kStringToDecimalHexTest },
+		{ "abc", "testing", kStringToDecimalHexTest },
+		{ "hint", "testing", kStringToDecimalHexTest },
+		{ "temp", "testing", kStringToDecimalHexTest },
+		{ "cant", "testing", kStringToDecimalHexTest },
 };      
 
 
 // roof
 void kStartConsoleShell( void )
 {
-    char vcCommandBuffer[ CONSOLESHELL_MAXCOMMANDBUFFERCOUNT ];
+    char vcCommandBuffer[ CONSOLESHELL_MAXCOMMANDBUFFERCOUNT ];    
     int iCommandBufferIndex = 0;
     BYTE bKey;
     //int iCursorX, iCursorY;
@@ -34,13 +40,26 @@ void kStartConsoleShell( void )
         int historyCount = 0;
         int historyFull = 0;
         int historyFirstCheck = 0;
-    // ============================================================        
-    
+        
+        int commandNum = sizeof( gs_vstCommandTable ) / sizeof( SHELLCOMMANDENTRY );
+        int commandCheck[commandNum];
+        int commandFind = 0;
+        int commandOne = 0;
+        int commandMore = 0;
+        kMemSet( commandCheck, 0, commandNum );
+        kMemSet( vcCommandBuffer, '\0', CONSOLESHELL_MAXCOMMANDBUFFERCOUNT );
+    // ============================================================            
         
         
     while( 1 )
     {        
         bKey = kGetCh();
+        
+        // hw3 history initialize ============================================================
+        
+        if( bKey != KEY_TAB ) commandMore =0;
+        
+        // ============================================================
         
         if( bKey == KEY_BACKSPACE )
         {
@@ -49,7 +68,9 @@ void kStartConsoleShell( void )
                 kGetCursor( &iCursorX, &iCursorY );
                 kPrintStringXY( iCursorX - 1, iCursorY, " " );
                 kSetCursor( iCursorX - 1, iCursorY );
-                iCommandBufferIndex--;
+                
+                // fix for hw3
+                vcCommandBuffer[ --iCommandBufferIndex ] = '\0';                
             }
         }
         
@@ -62,21 +83,19 @@ void kStartConsoleShell( void )
                 
                 vcCommandBuffer[ iCommandBufferIndex ] = '\0';
                 
-                //hw3 ============================================================
+                //hw3 history ============================================================
                 
                 // history count
                 int t=0;
-                historySaveCount++;  
-                historyFull++;
-                if(historySaveCount>9) historySaveCount=0; 
+                historySaveCount = (++historySaveCount)%10;   
+                historyFull++;               
                 historyCount = historySaveCount;
                 
                 // save
                 while(vcCommandBuffer[t] != '\0'){
                 historyBuffer[historySaveCount][t] = vcCommandBuffer[t];
                 t++;
-                }                              
-                historyBuffer[historySaveCount][t] = '\0';
+                }                                              
                 
                 historyFirstCheck = 0;
                 // ============================================================
@@ -93,10 +112,10 @@ void kStartConsoleShell( void )
                  ( bKey == KEY_CAPSLOCK ) || ( bKey == KEY_NUMLOCK ) ||
                  ( bKey == KEY_SCROLLLOCK ) )
         {
-            ;
+        	;
         }
         
-        // HW3 ============================================================
+        // HW3 history ============================================================
         else if( bKey == KEY_UP )
         {
         	if( historySaveCount >= 0 )
@@ -159,15 +178,84 @@ void kStartConsoleShell( void )
             	}             
             }
         }
+        
+        // tap key
+        else if( bKey == KEY_TAB )        	
+        {                   	
+        	int i;
+        	if( iCommandBufferIndex > 0 )
+        	{                 		
+        		  
+        		int iCommandLength;
+        		
+        		//length check
+        		for( i=0; i<commandNum;i++) {
+        			iCommandLength = kStrLen( gs_vstCommandTable[ i ].pcCommand );        			
+        			if(iCommandLength<(iCommandBufferIndex-1)) {
+        				commandCheck[i]=2;        				
+        			}
+        		}
+        		
+        		//same check
+        		for( i=0; i<commandNum ;i++ ) {
+        			int t=0;
+        			
+        			if(commandCheck[i]==2) continue;
+        			
+        			while (1){        				        				        				
+        				if(vcCommandBuffer[t]=='\0'){
+        					commandCheck[i]=1;
+        					commandOne = i;
+        					commandFind++;        					
+        					break;
+        				}
+        				
+        				if(gs_vstCommandTable[ i ].pcCommand[t]!=vcCommandBuffer[t]){        					
+        					break;
+        				}
+        				t++;
+        			}         			
+        		}
+        		
+        		// one case
+        		if(commandFind==1){      
+        			iCommandLength = kStrLen( gs_vstCommandTable[ commandOne ].pcCommand );
+        			for(i=0;i<iCommandLength;i++){
+        				if(gs_vstCommandTable[ commandOne ].pcCommand[i]!=vcCommandBuffer[i]){
+        					vcCommandBuffer[iCommandBufferIndex++] = gs_vstCommandTable[ commandOne ].pcCommand[i];
+        					kPrintf( "%c", gs_vstCommandTable[ commandOne ].pcCommand[i] );        					
+        				}
+        			}        			        			
+        		}
+        		
+        		// more cases        		
+        		else if(commandFind>1){        			        			        		
+        			if(commandMore==1){
+						kPrintf( "%\n");
+						for(i=0;i<commandNum;i++){
+							if(commandCheck[i]==1) kPrintf( "%s ", gs_vstCommandTable[ i ].pcCommand);        				
+						}
+						kPrintf( "%\n");
+						kPrintf( "%s", CONSOLESHELL_PROMPTMESSAGE );
+						kPrintf( "%s", vcCommandBuffer);
+        			}
+        			commandMore=(commandMore+1)%2;
+        		}
+            }
+        	
+        	// initialize        	
+        	for(i=0;i<commandNum;i++){
+        		commandCheck[ i ]=0;       				
+        	} 
+        	if(commandFind<=1) commandMore=0;
+        	commandOne=0;
+        	commandFind=0; 
+        }
+        
         // ============================================================
         
         else
         {            
-            if( bKey == KEY_TAB )
-            {
-                bKey = ' ';
-            }
-                        
             if( iCommandBufferIndex < CONSOLESHELL_MAXCOMMANDBUFFERCOUNT )
             {
                 vcCommandBuffer[ iCommandBufferIndex++ ] = bKey;
@@ -193,7 +281,6 @@ void kExecuteCommand( const char* pcCommandBuffer )
         }
     }
     
-
     iCount = sizeof( gs_vstCommandTable ) / sizeof( SHELLCOMMANDENTRY );
     for( i = 0 ; i < iCount ; i++ )
     {
