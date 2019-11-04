@@ -34,6 +34,20 @@ OperationSystem
 ```
 ------------------
 
+### assignment3 
+```
+1. Exception handler에 page fault, protection fault 추가 및 raisefault 명령어 구현
+>완료
+2. page fault, protection fault present bit에 따라 구별해서 발생
+>완료
+3. shell로 예외처리 후 복구
+>완료
+4. TLB 테이블 참조
+>완료
+5. history, tab key 구현
+>완료
+```
+
 ### Trouble Shooting guide 
 ```
 1. 부트로더 크기가 더 필요한 경우 2번 부트로더의 SECTORNUMBER:	db	0x04 
@@ -45,12 +59,3 @@ OperationSystem
 ```
 ## 진행 중인 사항
 
-### assignment3 
-```
-1. Exception handler에 page fualt, protection falut 추가 및 raisefault 명령어 구현
->완료
-2. page fualt, protection falut present bit에 따라 구별해서 발생
->완료
-3.
-4.
-```
