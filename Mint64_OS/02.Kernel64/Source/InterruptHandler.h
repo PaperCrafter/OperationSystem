@@ -3,12 +3,12 @@
  *  date    2009/01/24
  *  author  kkamagui 
  *          Copyright(c)2008 All rights reserved by kkamagui
- *  brief   ÀÎÅÍ·´Æ® ¹× ¿¹¿Ü ÇÚµé·¯¿¡ °ü·ÃµÈ Çì´õ ÆÄÀÏ
+ *  brief   ï¿½ï¿½ï¿½Í·ï¿½Æ® ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Úµé·¯ï¿½ï¿½ ï¿½ï¿½ï¿½Ãµï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
  */
 
 #ifndef __INTERRUPTHANDLER_H__
 #define __INTERRUPTHANDLER_H__
-#include "Types.h"  //ÆäÀÌÁö Å×ÀÌºíÀ» »õ·Ó°Ô Á¤ÀÇ 
+#include "Types.h"  //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ó°ï¿½ ï¿½ï¿½ï¿½ï¿½ 
 
 #define PAGE_FLAGS_P		0x00000001	// Present
 #define PAGE_FLAGS_RW		0x00000002	// Read/Write
@@ -37,7 +37,7 @@ typedef struct kPageTableEntryStruct {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// ÇÔ¼ö
+// ï¿½Ô¼ï¿½
 //
 ////////////////////////////////////////////////////////////////////////////////
 void kCommonExceptionHandler( int iVectorNumber, QWORD qwErrorCode );
