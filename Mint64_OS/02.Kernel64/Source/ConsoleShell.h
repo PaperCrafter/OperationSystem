@@ -74,7 +74,12 @@ void kStringToDecimalHexTest( const char* pcParameterBuffer );
 void kShutdown( const char* pcParamegerBuffer );
 //hw3-1
 void kRaiseFault( const char* pcParamegerBuffer );
-
-
+//4
+void kSetTimer( const char* pcParameterBuffer );
+void kWaitUsingPIT( const char* pcParameterBuffer );
+void kReadTimeStampCounter(const char* pcParameterBuffer );
+void kMeasureProcessorSpeed(const char* pcParameterBuffer );
+void kShowDateAndTime( const char* pcParameterBuffer );
+void kCreateTestTask( const char* pcParameterBuffer );
 
 #endif /*__CONSOLESHELL_H__*/

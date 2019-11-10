@@ -3,7 +3,9 @@ Main.o: ../Source/Main.c ../Source/Types.h ../Source/Keyboard.h \
  ../Source/ConsoleShell.h
 ConsoleShell.o: ../Source/ConsoleShell.c ../Source/ConsoleShell.h \
  ../Source/Types.h ../Source/Console.h ../Source/Keyboard.h \
- ../Source/Utility.h
+ ../Source/Utility.h ../Source/PIT.h ../Source/RTC.h \
+ ../Source/AssemblyUtility.h ../Source/Task.h
+PIT.o: ../Source/PIT.c ../Source/PIT.h ../Source/Types.h
 Queue.o: ../Source/Queue.c ../Source/Queue.h ../Source/Types.h
 InterruptHandler.o: ../Source/InterruptHandler.c \
  ../Source/InterruptHandler.h ../Source/Types.h ../Source/PIC.h \
@@ -13,7 +15,11 @@ Descriptor.o: ../Source/Descriptor.c ../Source/Descriptor.h \
 Console.o: ../Source/Console.c ../Source/Console.h ../Source/Types.h \
  ../Source/Keyboard.h
 Utility.o: ../Source/Utility.c ../Source/Utility.h ../Source/Types.h \
- ../Source/AssemblyUtility.h
+ ../Source/AssemblyUtility.h ../Source/Task.h
 PIC.o: ../Source/PIC.c ../Source/PIC.h ../Source/Types.h
 Keyboard.o: ../Source/Keyboard.c ../Source/Types.h \
- ../Source/AssemblyUtility.h ../Source/Keyboard.h ../Source/Queue.h
+ ../Source/AssemblyUtility.h ../Source/Task.h ../Source/Keyboard.h \
+ ../Source/Queue.h
+RTC.o: ../Source/RTC.c ../Source/RTC.h ../Source/Types.h
+Task.o: ../Source/Task.c ../Source/Task.h ../Source/Types.h \
+ ../Source/Descriptor.h
