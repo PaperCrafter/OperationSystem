@@ -6,7 +6,7 @@ SECTION .text
 global kInPortByte, kOutPortByte, kLoadGDTR, kLoadTR, kLoadIDTR
 global kEnableInterrupt, kDisableInterrupt, kReadRFLAGS
 global kReadTSC
-global kSwitchContext, kHlt
+global kSwitchContext, kHlt, kTestAndSet
 
 kHlt:
     hlt
@@ -194,3 +194,21 @@ kSwitchContext:
     ; Context �ڷᱸ������ �������͸� ����
     KLOADCONTEXT
     iretq
+
+kTestAndSet:
+    mov rax, rsi        ; �� ��° �Ķ������ ���� ���� RAX �������Ϳ� ���� 
+    
+    ; RAX �������Ϳ� ����� ���� ���� ù ��° �Ķ������ �޸� ��巹���� ����
+    ; ���Ͽ� �� ���� ���ٸ� �� ��° �Ķ������ ���� ù ��° �Ķ���Ͱ� ����Ű��
+    ; ��巹���� ����
+    lock cmpxchg byte [ rdi ], dl   
+    je .SUCCESS         ; ZF ��Ʈ�� 1�̸� ���ٴ� ���̹Ƿ� .SUCCESS�� �̵�
+
+.NOTSAME:               ; Destination�� Compare�� �ٸ� ���
+    mov rax, 0x00
+    ret
+    
+.SUCCESS:               ; Destination�� Compare�� ���� ���
+    mov rax, 0x01
+    ret
+

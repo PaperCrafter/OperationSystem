@@ -14,6 +14,7 @@
 #include "RTC.h"
 #include "AssemblyUtility.h"
 #include "Task.h"
+#include "Synchronization.h"
 
 // Ŀ�ǵ� ���̺� ����
 SHELLCOMMANDENTRY gs_vstCommandTable[] =
@@ -32,8 +33,9 @@ SHELLCOMMANDENTRY gs_vstCommandTable[] =
         { "createtask", "Create Task ex)createtask 1(type) 10(count)", kCreateTestTask },
 	    { "changepriority", "Change Task Priority, ex)changepriority 1(ID) 2(Priority)", kChangeTaskPriority },
         { "tasklist", "Show Task List", kShowTaskList },
-        { "killtask", "End Task, ex)killtask 1(ID)", kKillTask },
+        { "killtask", "End Task, ex)killtask 1(ID) or 0xffffffff(All Task)", kKillTask },
         { "cpuload", "Show Processor Load", kCPULoad },
+        { "testmutex", "Test Mutex Function", kTestMutex },
 };                                     
 
 //==============================================================================
@@ -859,12 +861,13 @@ static void kShowTaskList( const char* pcParameterBuffer )
 
 /**
  *  �½�ũ�� ����
- */
-static void kKillTask( const char* pcParameterBuffer )
+ */static void kKillTask( const char* pcParameterBuffer )
 {
     PARAMETERLIST stList;
     char vcID[ 30 ];
     QWORD qwID;
+    TCB* pstTCB;
+    int i;
     
     // �Ķ���͸� ����
     kInitializeParameter( &stList, pcParameterBuffer );
@@ -880,14 +883,39 @@ static void kKillTask( const char* pcParameterBuffer )
         qwID = kAToI( vcID, 10 );
     }
     
-    kPrintf( "Kill Task ID [0x%q] ", qwID );
-    if( kEndTask( qwID ) == TRUE )
+    // Ư�� ID�� �����ϴ� ���
+    if( qwID != 0xFFFFFFFF )
     {
-        kPrintf( "Success\n" );
+        kPrintf( "Kill Task ID [0x%q] ", qwID );
+        if( kEndTask( qwID ) == TRUE )
+        {
+            kPrintf( "Success\n" );
+        }
+        else
+        {
+            kPrintf( "Fail\n" );
+        }
     }
+    // �ܼ� �а� ���� �½�ũ�� �����ϰ� ��� �½�ũ ����
     else
     {
-        kPrintf( "Fail\n" );
+        for( i = 2 ; i < TASK_MAXCOUNT ; i++ )
+        {
+            pstTCB = kGetTCBInTCBPool( i );
+            qwID = pstTCB->stLink.qwID;
+            if( ( qwID >> 32 ) != 0 )
+            {
+                kPrintf( "Kill Task ID [0x%q] ", qwID );
+                if( kEndTask( qwID ) == TRUE )
+                {
+                    kPrintf( "Success\n" );
+                }
+                else
+                {
+                    kPrintf( "Fail\n" );
+                }
+            }
+        }
     }
 }
 
@@ -898,4 +926,69 @@ static void kCPULoad( const char* pcParameterBuffer )
 {
     kPrintf( "Processor Load : %d%%\n", kGetProcessorLoad() );
 }
-                                              
+    
+// ���ؽ� �׽�Ʈ�� ���ؽ��� ����
+static MUTEX gs_stMutex;
+static volatile QWORD gs_qwAdder;
+
+/**
+ *  ���ؽ��� �׽�Ʈ�ϴ� �½�ũ
+ */
+static void kPrintNumberTask( void )
+{
+    int i;
+    int j;
+    QWORD qwTickCount;
+
+    // 50ms ���� ����Ͽ� �ܼ� ���� ����ϴ� �޽����� ��ġ�� �ʵ��� ��
+    qwTickCount = kGetTickCount();
+    while( ( kGetTickCount() - qwTickCount ) < 50 )
+    {
+        kSchedule();
+    }    
+    
+    // ������ ���鼭 ���ڸ� ���
+    for( i = 0 ; i < 5 ; i++ )
+    {
+        kLock( &( gs_stMutex ) );
+        kPrintf( "Task ID [0x%Q] Value[%d]\n", kGetRunningTask()->stLink.qwID,
+                gs_qwAdder );
+        
+        gs_qwAdder += 1;
+        kUnlock( & ( gs_stMutex ) );
+    
+        // ���μ��� �Ҹ� �ø����� �߰��� �ڵ�
+        for( j = 0 ; j < 30000 ; j++ ) ;
+    }
+    
+    // ��� �½�ũ�� ������ ������ 1��(100ms) ���� ���
+    qwTickCount = kGetTickCount();
+    while( ( kGetTickCount() - qwTickCount ) < 1000 )
+    {
+        kSchedule();
+    }    
+    
+    // �½�ũ ����
+    kExitTask();
+}
+
+/**
+ *  ���ؽ��� �׽�Ʈ�ϴ� �½�ũ ����
+ */
+static void kTestMutex( const char* pcParameterBuffer )
+{
+    int i;
+    
+    gs_qwAdder = 1;
+    
+    // ���ؽ� �ʱ�ȭ
+    kInitializeMutex( &gs_stMutex );
+    
+    for( i = 0 ; i < 3 ; i++ )
+    {
+        // ���ؽ��� �׽�Ʈ�ϴ� �½�ũ�� 3�� ����
+        kCreateTask( TASK_FLAGS_LOW, ( QWORD ) kPrintNumberTask );
+    }    
+    kPrintf( "Wait Util %d Task End...\n", i );
+    kGetCh();
+}
