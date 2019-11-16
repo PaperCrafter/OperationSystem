@@ -10,6 +10,7 @@ SECTION .text       ; text ����(���׸�Ʈ)�� ����
 
 ; �ܺο��� ���ǵ� �Լ��� �� �� �ֵ��� ������(Import)
 extern kCommonExceptionHandler, kCommonInterruptHandler, kKeyboardHandler, kPageFaultExceptionHandler
+extern kTimerHandler
 
 ; C ���� ȣ���� �� �ֵ��� �̸��� ������(Export)
 ; ����(Exception) ó���� ���� ISR
@@ -349,7 +350,7 @@ kISRTimer:
 
     ; �ڵ鷯�� ���ͷ�Ʈ ��ȣ�� �����ϰ� �ڵ鷯 ȣ��
     mov rdi, 32
-    call kCommonInterruptHandler
+    call kTimerHandler
 
     KLOADCONTEXT    ; ���ؽ�Ʈ�� ����
     iretq           ; ���ͷ�Ʈ ó���� �Ϸ��ϰ� ������ �����ϴ� �ڵ�� ����

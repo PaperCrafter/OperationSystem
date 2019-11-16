@@ -2,6 +2,9 @@
 #include "PIC.h"
 #include "Keyboard.h"
 #include "Console.h"
+#include "Utility.h"
+#include "Task.h"
+#include "Descriptor.h"
 
 
 static inline void invlpg(int* m)
@@ -150,4 +153,29 @@ void kKeyboardHandler( int iVectorNumber )
 void kSetPageEntryData( PTENTRY* pstEntry, DWORD dwUpperBaseAddress, DWORD dwLowerBaseAddress, DWORD dwLowerFlags, DWORD dwUpperflags ) {
 	pstEntry->dwAttributeAndLowerBaseAddress = dwLowerBaseAddress | dwLowerFlags;
 	pstEntry->dwUpperBaseAddressAndEXB = ( dwUpperBaseAddress & 0xFF ) | dwUpperflags;
+}
+
+
+void kTimerHandler( int iVectorNumber )
+{
+    char vcBuffer[] = "[INT:  , ]";
+    static int g_iTimerInterruptCount = 0;
+
+    //
+    vcBuffer[ 5 ] = '0' + iVectorNumber / 10;
+    vcBuffer[ 6 ] = '0' + iVectorNumber % 10;
+
+    vcBuffer[ 8 ] = '0' + g_iTimerInterruptCount;
+    g_iTimerInterruptCount = ( g_iTimerInterruptCount + 1 ) % 10;
+    kPrintStringXY( 70, 0, vcBuffer );
+
+    kSendEOIToPIC( iVectorNumber - PIC_IRQSTARTVECTOR );
+
+    g_qwTickCount++;
+    
+    kDecreaseProcessorTime();
+
+    if( kIsProcessorTimeExpired() == TRUE){
+        kScheduleInInterrupt();
+    }
 }

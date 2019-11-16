@@ -31,8 +31,8 @@ void kInitializePageTables(void) {
 		dwMappingAddress += PAGE_DEFAULTSIZE;
 	}
 	//0x000A0000 => 0x00000000
-	kSetPageEntryData( pstPDEntry + 5, ( 0 * ( PAGE_DEFAULTSIZE >> 20 ) ) >> 12, dwMappingAddress, PAGE_FLAGS_DEFAULT | PAGE_FLAGS_PS, 0 );
-	dwMappingAddress += PAGE_DEFAULTSIZE;
+	//kSetPageEntryData( pstPDEntry + 5, ( 0 * ( PAGE_DEFAULTSIZE >> 20 ) ) >> 12, dwMappingAddress, PAGE_FLAGS_DEFAULT | PAGE_FLAGS_PS, 0 );
+	//dwMappingAddress += PAGE_DEFAULTSIZE;
 
 	//page direacoty table -> page table(4kb)
 	//원래라면 512*64*64를 매핑해줘야 하나 2메가 페이지 하나만 4k로 나누어 주면 되기 때문에 512로 매핑
@@ -47,6 +47,7 @@ void kInitializePageTables(void) {
 		else kSetPageEntryData((pstPTEntry + i), 0, dwMappingAddress, PAGE_FLAGS_DEFAULT, 0);
 		dwMappingAddress += PAGE_TABLESIZE;
 	}
+	
 }
 
 void kSetPageEntryData( PTENTRY* pstEntry, DWORD dwUpperBaseAddress, DWORD dwLowerBaseAddress, DWORD dwLowerFlags, DWORD dwUpperflags ) {

@@ -4,6 +4,8 @@
 #include "PIC.h"
 #include "Console.h"
 #include "ConsoleShell.h"
+#include "Task.h"
+#include "PIT.h"
 
 void Main( void )
 {	
@@ -62,6 +64,12 @@ void Main( void )
     kSetCursor( 45, iCursorY++ );
     kPrintf( "Pass], Size = %d MB\n", kGetTotalRAMSize() );
     
+    kPrintf( "TCB Pool And Scheduler Initialize...........[Pass]\n" );
+    iCursorY++;
+
+    kInitializeScheduler();
+    kInitializePIT( MSTOCOUNT(1), 1 );
+
     kPrintf( "Keyboard Activate And Queue Initialize......[    ]" );
     
     // keyboard activate
