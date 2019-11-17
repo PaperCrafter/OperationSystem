@@ -40,6 +40,10 @@ SHELLCOMMANDENTRY gs_vstCommandTable[] =
         { "showmatrix", "Show Matrix Screen", kShowMatrix },
 };                                     
 
+// hw 4
+QWORD qwOneSec = 0;
+QWORD qwStart = 0;
+
 //==============================================================================
 //  ���� ���� �����ϴ� �ڵ�
 //==============================================================================
@@ -73,6 +77,7 @@ void kStartConsoleShell( void )
         kMemSet( vcCommandBuffer, '\0', CONSOLESHELL_MAXCOMMANDBUFFERCOUNT );
     // ============================================================            
         
+   
         
     while( 1 )
     {        
@@ -470,7 +475,7 @@ static void kStringToDecimalHexTest( const char* pcParameterBuffer )
             lValue = kAToI( vcParameter, 10 );
             kPrintf( "Decimal Value = %d\n", lValue );
         }
-        
+        (double)
         iCount++;
     }
 }
@@ -595,9 +600,12 @@ static void kMeasureProcessorSpeed( const char* pcParameterBuffer )
 
         kPrintf( "." );
     }
-    // Ÿ�̸� ����
+    
     kInitializePIT( MSTOCOUNT( 1 ), TRUE );    
     kEnableInterrupt();
+    
+    // hw4
+    qwOneSec = qwTotalTSC / 10 ;
     
     kPrintf( "\nCPU Speed = %d MHz\n", qwTotalTSC / 10 / 1000 / 1000 );
 }
@@ -721,22 +729,32 @@ static void kTestTask2( void )
     TCB* pstRunningTask;
     char vcData[ 4 ] = { '-', '\\', '|', '/' };
     
+    // hw 4
+    if(qwStart == 0 ) qwStart = kReadTSC();    
+    int time = 1;
+    int count = 0;
+    
     // �ڽ��� ID�� �� ȭ�� ���������� ���
     pstRunningTask = kGetRunningTask();
     iOffset = ( pstRunningTask->stLink.qwID & 0xFFFFFFFF ) * 2;
     iOffset = CONSOLE_WIDTH * CONSOLE_HEIGHT - 
         ( iOffset % ( CONSOLE_WIDTH * CONSOLE_HEIGHT ) );
-
+        
     while( 1 )
-    {
-        // ȸ���ϴ� �ٶ����� ǥ��
-        pstScreen[ iOffset ].bCharactor = vcData[ i % 4 ];
-        // ���� ����
+    {    	
+    	// hw 4
+    	if(kReadTSC()-qwStart >= qwOneSec*time) {
+    		kPrintf("\n[%d sec] / Task ID[0x%Q] / task count == %d",time, pstRunningTask->stLink.qwID , count);    		 
+    		time++;
+    		count = 0;
+    	}
+    	count++;
+    	
+        pstScreen[ iOffset ].bCharactor = vcData[ i % 4 ];        
         pstScreen[ iOffset ].bAttribute = ( iOffset % 15 ) + 1;
         i++;
-        
-        // �ٸ� �½�ũ�� ��ȯ
-        //kSchedule();
+                
+        kSchedule();
     }
 }
 
@@ -770,15 +788,29 @@ static void kCreateTestTask( const char* pcParameterBuffer )
         kPrintf( "Task1 %d Created\n", i );
         break;
         
-    // Ÿ�� 2 �½�ũ ����
+    // task2
     case 2:
     default:
         for( i = 0 ; i < kAToI( vcCount, 10 ) ; i++ )
-        {    
-            if( kCreateTask( TASK_FLAGS_LOW | TASK_FLAGS_THREAD, 0, 0, ( QWORD ) kTestTask2 ) == NULL )
-            {
-                break;
-            }
+        {   
+        	if(i%3 == 0){
+        		if( kCreateTask( TASK_FLAGS_HIGH | TASK_FLAGS_THREAD, 0, 0, ( QWORD ) kTestTask2 ) == NULL )
+        		{
+        		break;
+        		}
+        	}
+        	else if(i%3 == 1){
+        		if( kCreateTask( TASK_FLAGS_MEDIUM | TASK_FLAGS_THREAD, 0, 0, ( QWORD ) kTestTask2 ) == NULL )
+        		{
+        		break;
+        		}
+        	}
+        	else if(i%3 == 2){
+        		if( kCreateTask( TASK_FLAGS_LOW | TASK_FLAGS_THREAD, 0, 0, ( QWORD ) kTestTask2 ) == NULL )
+        		{
+        		break;
+        		}
+        	}        	
         }
         
         kPrintf( "Task2 %d Created\n", i );
