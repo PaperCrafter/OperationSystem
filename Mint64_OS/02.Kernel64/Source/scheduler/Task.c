@@ -229,9 +229,9 @@ void kInitializeScheduler( void )
     // �غ� ����Ʈ�� �켱 ������ ���� Ƚ���� �ʱ�ȭ�ϰ� ��� ����Ʈ�� �ʱ�ȭ
     for( i = 0 ; i < TASK_MAXREADYLISTCOUNT ; i++ )
     {
+        kInitializeList( &( gs_stScheduler.vstReadyList[ i ] ) );
         gs_stScheduler.viExecuteCount[ i ] = 0;
     }    
-    kInitializeList( &( gs_stScheduler.stReadyList ) );
     kInitializeList( &( gs_stScheduler.stWaitList ) );
     
     // TCB�� �Ҵ� �޾� ������ ������ �½�ũ�� Ŀ�� ������ ���μ����� ����
@@ -297,26 +297,26 @@ static TCB* kGetNextTaskToRun( void )
     for( j = 0 ; j < 2 ; j++ )
     {
         // ���� �켱 �������� ���� �켱 �������� ����Ʈ�� Ȯ���Ͽ� �����ٸ��� �½�ũ�� ����
-        // for( i = 0 ; i < TASK_MAXREADYLISTCOUNT ; i++ )
-        // {
-        //     iTaskCount = kGetListCount( &( gs_stScheduler.stReadyList[ i ] ) );
+        for( i = 0 ; i < TASK_MAXREADYLISTCOUNT ; i++ )
+        {
+            iTaskCount = kGetListCount( &( gs_stScheduler.vstReadyList[ i ] ) );
             
-        //     // ���� ������ Ƚ������ ����Ʈ�� �½�ũ ���� �� ������ ���� �켱 ������
-        //     // �½�ũ�� ������
-        //     if( gs_stScheduler.viExecuteCount[ i ] < iTaskCount )
-        //     {
-        //         pstTarget = ( TCB* ) kRemoveListFromHeader( 
-        //                                 &( gs_stScheduler.stReadyList[ i ] ) );
-        //         gs_stScheduler.viExecuteCount[ i ]++;
-        //         break;            
-        //     }
-        //     // ���� ������ Ƚ���� �� ������ ���� Ƚ���� �ʱ�ȭ�ϰ� ���� �켱 ������ �纸��
-        //     else
-        //     {
-        //         gs_stScheduler.viExecuteCount[ i ] = 0;
-        //     }
-        // }
-        iTaskCount = kGetListCount( &( gs_stScheduler.stReadyList ) );
+            // ���� ������ Ƚ������ ����Ʈ�� �½�ũ ���� �� ������ ���� �켱 ������
+            // �½�ũ�� ������
+            if( gs_stScheduler.viExecuteCount[ i ] < iTaskCount )
+            {
+                pstTarget = ( TCB* ) kRemoveListFromHeader( 
+                                        &( gs_stScheduler.vstReadyList[ i ] ) );
+                gs_stScheduler.viExecuteCount[ i ]++;
+                break;            
+            }
+            // ���� ������ Ƚ���� �� ������ ���� Ƚ���� �ʱ�ȭ�ϰ� ���� �켱 ������ �纸��
+            else
+            {
+                gs_stScheduler.viExecuteCount[ i ] = 0;
+            }
+        }
+        
         // ���� ������ �½�ũ�� ã������ ����
         if( pstTarget != NULL )
         {
@@ -344,7 +344,7 @@ static BOOL kAddTaskToReadyList( TCB* pstTask )
         return FALSE;
     }
     
-    kAddListToTail( &( gs_stScheduler.stReadyList), pstTask );
+    kAddListToTail( &( gs_stScheduler.vstReadyList[ bPriority ] ), pstTask );
     return TRUE;
 }
 
@@ -376,7 +376,7 @@ static TCB* kRemoveTaskFromReadyList( QWORD qwTaskID )
         return NULL;
     }    
 
-    pstTarget = kRemoveList( &( gs_stScheduler.stReadyList), 
+    pstTarget = kRemoveList( &( gs_stScheduler.vstReadyList[ bPriority ]), 
                      qwTaskID );
     return pstTarget;
 }
@@ -652,12 +652,12 @@ int kGetReadyTaskCount( void )
 
     // �Ӱ� ���� ����
     bPreviousFlag = kLockForSystemData();
-    iTotalCount = kGetListCount( &( gs_stScheduler.stReadyList));
+
     // ��� �غ� ť�� Ȯ���Ͽ� �½�ũ ������ ����
-    // for( i = 0 ; i < TASK_MAXREADYLISTCOUNT ; i++ )
-    // {
-    //     iTotalCount += kGetListCount( &( gs_stScheduler.stReadyList[ i ] ) );
-    // }
+    for( i = 0 ; i < TASK_MAXREADYLISTCOUNT ; i++ )
+    {
+        iTotalCount += kGetListCount( &( gs_stScheduler.vstReadyList[ i ] ) );
+    }
     
     // �Ӱ� ���� ��
     kUnlockForSystemData( bPreviousFlag );

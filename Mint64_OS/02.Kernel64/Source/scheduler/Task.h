@@ -136,10 +136,6 @@ typedef struct kTaskControlBlockStruct
     // ������ ��巹���� ũ��
     void* pvStackAddress;
     QWORD qwStackSize;
-
-    //티켓 수
-    int tickets
-    //
 } TCB;
 
 // TCB Ǯ�� ���¸� �����ϴ� �ڷᱸ��
@@ -154,7 +150,7 @@ typedef struct kTCBPoolManagerStruct
     int iAllocatedCount;
 } TCBPOOLMANAGER;
 
-//로터리 스케줄러 자료구조
+// �����ٷ��� ���¸� �����ϴ� �ڷᱸ��
 typedef struct kSchedulerStruct
 {
     // ���� ���� ���� �½�ũ
@@ -164,8 +160,7 @@ typedef struct kSchedulerStruct
     int iProcessorTime;
     
     // ������ �½�ũ�� �غ����� ����Ʈ, �½�ũ�� �켱 ������ ���� ����
-    //in lottery it dosent have to be an layerd architecture
-    LIST stReadyList;
+    LIST vstReadyList[ TASK_MAXREADYLISTCOUNT ];
 
     // ������ �½�ũ�� ������� ����Ʈ
     LIST stWaitList;
@@ -178,16 +173,39 @@ typedef struct kSchedulerStruct
     
     // ���� �½�ũ(Idle Task)���� ����� ���μ��� �ð�
     QWORD qwSpendProcessorTimeInIdleTask;
-    //총 전역 티켓량
-    int globaltotaltickets;
+} SCHEDULER;
+
+//로터리 스케줄러 자료구조
+typedef struct kSchedulerStruct2
+{
+    // ���� ���� ���� �½�ũ
+    TCB* pstRunningTask;
+    
+    // ���� ���� ���� �½�ũ�� ����� �� �ִ� ���μ��� �ð�
+    int iProcessorTime;
+    
+    // ������ �½�ũ�� �غ����� ����Ʈ, �½�ũ�� �켱 ������ ���� ����
+    LIST vstReadyList[ TASK_MAXREADYLISTCOUNT ];
+
+    // ������ �½�ũ�� ������� ����Ʈ
+    LIST stWaitList;
+    
+    // �� �켱 �������� �½�ũ�� ������ Ƚ���� �����ϴ� �ڷᱸ��
+    int viExecuteCount[ TASK_MAXREADYLISTCOUNT ];
+    
+    // ���μ��� ���ϸ� ����ϱ� ���� �ڷᱸ��
+    QWORD qwProcessorLoad;
+    
+    // ���� �½�ũ(Idle Task)���� ����� ���μ��� �ð�
+    QWORD qwSpendProcessorTimeInIdleTask;
+    //총 티켓량
+    int totaltickets;
     //카운터
     int counter;
     //winner
     int winner;
-    //총 티켓 갯수
-    int totaltickets;
 
-} SCHEDULER;
+} LOTTERYSCHEDULER;
 
 
 #pragma pack( pop )
