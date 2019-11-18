@@ -237,4 +237,7 @@ static TCB* kGetProcessByThread( TCB* pstThread );
 void kIdleTask( void );
 void kHaltProcessorByLoad( void );
 
+
+
+static int rand();
 #endif /*__TASK_H__*/
