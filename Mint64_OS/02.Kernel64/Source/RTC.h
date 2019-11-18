@@ -3,7 +3,7 @@
  *  date    2009/02/14
  *  author  kkamagui 
  *          Copyright(c)2008 All rights reserved by kkamagui
- *  brief   RTC ÄÁÆ®·Ñ·¯¿¡ °ü·ÃµÈ Çì´õ ÆÄÀÏ
+ *  brief   RTC ï¿½ï¿½Æ®ï¿½Ñ·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ãµï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
  */
 
 #ifndef __RTC_H__
@@ -13,14 +13,14 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// ¸ÅÅ©·Î
+// ï¿½ï¿½Å©ï¿½ï¿½
 //
 ////////////////////////////////////////////////////////////////////////////////
-// I/O Æ÷Æ®
+// I/O ï¿½ï¿½Æ®
 #define RTC_CMOSADDRESS         0x70
 #define RTC_CMOSDATA            0x71
 
-// CMOS ¸Þ¸ð¸® ¾îµå·¹½º
+// CMOS ï¿½Þ¸ï¿½ ï¿½ï¿½å·¹ï¿½ï¿½
 #define RTC_ADDRESS_SECOND      0x00
 #define RTC_ADDRESS_MINUTE      0x02
 #define RTC_ADDRESS_HOUR        0x04
@@ -29,12 +29,12 @@
 #define RTC_ADDRESS_MONTH       0x08
 #define RTC_ADDRESS_YEAR        0x09
 
-// BCD Æ÷¸ËÀ» Binary·Î º¯È¯ÇÏ´Â ¸ÅÅ©·Î
+// BCD ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Binaryï¿½ï¿½ ï¿½ï¿½È¯ï¿½Ï´ï¿½ ï¿½ï¿½Å©ï¿½ï¿½
 #define RTC_BCDTOBINARY( x )    ( ( ( ( x ) >> 4 ) * 10 ) + ( ( x ) & 0x0F ) )
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-//  ÇÔ¼ö
+//  ï¿½Ô¼ï¿½
 //
 ////////////////////////////////////////////////////////////////////////////////
 void kReadRTCTime( BYTE* pbHour, BYTE* pbMinute, BYTE* pbSecond );
@@ -42,4 +42,6 @@ void kReadRTCDate( WORD* pwYear, BYTE* pbMonth, BYTE* pbDayOfMonth,
                    BYTE* pbDayOfWeek );
 char* kConvertDayOfWeekToString( BYTE bDayOfWeek );
 
+
+int generateSeed();
 #endif /*__RTC_H__*/

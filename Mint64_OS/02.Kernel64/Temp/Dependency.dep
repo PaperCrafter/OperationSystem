@@ -29,4 +29,4 @@ Keyboard.o: ../Source/Keyboard.c ../Source/Types.h \
  ../Source/Keyboard.h ../Source/Queue.h ../Source/Synchronization.h
 RTC.o: ../Source/RTC.c ../Source/RTC.h ../Source/Types.h
 Task.o: ../Source/Task.c ../Source/Task.h ../Source/Types.h \
- ../Source/List.h ../Source/Descriptor.h
+ ../Source/List.h ../Source/Descriptor.h ../Source/RTC.h
