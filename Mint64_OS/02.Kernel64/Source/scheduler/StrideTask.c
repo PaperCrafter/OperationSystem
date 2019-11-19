@@ -14,6 +14,7 @@ static SCHEDULER gs_stScheduler;
 static TCBPOOLMANAGER gs_stTCBPoolManager;
 
 static int weight = 1000;
+static int maxTotalPass = 1000000000;
 
 //==============================================================================
 //  �½�ũ Ǯ�� �½�ũ ����
@@ -295,6 +296,9 @@ static TCB* kGetNextTaskToRun( void )
     TCB* pstTarget = NULL;
     int iTaskCount, i, j;
     int minNodeIdx = 0;
+    int minPass = 0;
+    int totalPass = 0;
+    
     // ť�� �½�ũ�� ������ ��� ť�� �½�ũ�� 1ȸ�� ����� ���, ��� ť�� ���μ�����
     // �纸�Ͽ� �½�ũ�� �������� ���� �� ������ NULL�� ��� �ѹ� �� ����
     //pstTarget = (TCB*)kGetHeaderFromList(&(gs_stScheduler.vstReadyList));
@@ -304,21 +308,29 @@ static TCB* kGetNextTaskToRun( void )
         return NULL;
     }
 
-    //minimize pass if every pass goes out of range;
-
+ 
     //schedule
     for(i =0; i < iTaskCount; i++){
         tmpNode = (TCB*)kRemoveListFromHeader(&(gs_stScheduler.vstReadyList));
-        tmpNode->pass +=tmpNode->stride;
-
-        if(i == 0 || tmpNode->pass > pstTarget->pass){
+        totalPass += tmpNode->pass;
+        if(i == 0 || tmpNode->pass < pstTarget->pass){
+            minPass = tmpNode->pass;
             pstTarget = tmpNode;
         }
-        kAddListToTail(&(gs_stScheduler.vstReadyList), pstTarget);
+        kAddListToTail(&(gs_stScheduler.vstReadyList), tmpNode);
     }
 
-    kRemoveList( &(gs_stScheduler.vstReadyList), pstTarget->stLink.qwID );
+    //prevent pass going out of range
+    if(totalPass > maxTotalPass){
+        for(i =0; i < iTaskCount; i++){
+            tmpNode = (TCB*)kRemoveListFromHeader(&(gs_stScheduler.vstReadyList));
+            tmpNode -> pass = 0;
+            kAddListToTail(&(gs_stScheduler.vstReadyList), tmpNode);
+        }
+    }
+
     pstTarget->pass += pstTarget->stride;
+    kRemoveList( &(gs_stScheduler.vstReadyList), pstTarget->stLink.qwID );
     return pstTarget;
 }
 
@@ -330,7 +342,6 @@ static BOOL kAddTaskToReadyList( TCB* pstTask )
     BYTE bPriority;
     
     bPriority = GETPRIORITY( pstTask->qwFlags );
-
 
     kAddListToTail( &( gs_stScheduler.vstReadyList), pstTask );
     return TRUE;
@@ -387,7 +398,7 @@ BOOL kChangePriority( QWORD qwTaskID, BYTE bPriority )
     if( pstTarget->stLink.qwID == qwTaskID )
     {
         SETPRIORITY( pstTarget->qwFlags, bPriority );
-        pstTarget->stride = bPriority / weight;
+        pstTarget->stride = weight / bPriority;
     }
     // �������� �½�ũ�� �ƴϸ� �غ� ����Ʈ���� ã�Ƽ� �ش� �켱 ������ ����Ʈ�� �̵�
     else
