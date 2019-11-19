@@ -160,8 +160,7 @@ void kTimerHandler( int iVectorNumber )
 {
     char vcBuffer[] = "[INT:  , ]";
     static int g_iTimerInterruptCount = 0;
-
-    //
+    timer++;     //
     vcBuffer[ 5 ] = '0' + iVectorNumber / 10;
     vcBuffer[ 6 ] = '0' + iVectorNumber % 10;
 

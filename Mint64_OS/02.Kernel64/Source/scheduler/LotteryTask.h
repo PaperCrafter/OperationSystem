@@ -165,15 +165,12 @@ typedef struct kSchedulerStruct
     
     // ������ �½�ũ�� �غ����� ����Ʈ, �½�ũ�� �켱 ������ ���� ����
     //in lottery it dosent have to be an layerd architecture
-    LIST stReadyList;
+    LIST vstReadyList;
 
     // ������ �½�ũ�� ������� ����Ʈ
     LIST stWaitList;
-    
-    // �� �켱 �������� �½�ũ�� ������ Ƚ���� �����ϴ� �ڷᱸ��
-    //lottery scheduler doesnt need lots of list
-    int viExecuteCount;
-    
+
+
     // ���μ��� ���ϸ� ����ϱ� ���� �ڷᱸ��
     QWORD qwProcessorLoad;
     
@@ -238,7 +235,7 @@ static TCB* kGetProcessByThread( TCB* pstThread );
 void kIdleTask( void );
 void kHaltProcessorByLoad( void );
 
-
+static int seed;
 
 static int rand();
 #endif /*__TASK_H__*/

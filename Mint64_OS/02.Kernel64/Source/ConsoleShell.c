@@ -77,7 +77,7 @@ void kStartConsoleShell( void )
     while( 1 )
     {        
         bKey = kGetCh();
-        
+
         // hw3 history initialize ============================================================
         
         if( bKey != KEY_TAB ) commandMore =0;
@@ -834,7 +834,7 @@ static void kShowTaskList( const char* pcParameterBuffer )
     int i;
     TCB* pstTCB;
     int iCount = 0;
-    
+
     kPrintf( "=========== Task Total Count [%d] ===========\n", kGetTaskCount() );
     for( i = 0 ; i < TASK_MAXCOUNT ; i++ )
     {

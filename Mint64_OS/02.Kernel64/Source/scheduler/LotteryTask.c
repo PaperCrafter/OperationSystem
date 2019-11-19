@@ -8,7 +8,6 @@
 
 #include "Task.h"
 #include "Descriptor.h"
-#include "RTC.h"
 
 // �����ٷ� ���� �ڷᱸ��
 static SCHEDULER gs_stScheduler;
@@ -233,8 +232,7 @@ void kInitializeScheduler( void )
     TCB* pstTask;
     // �½�ũ Ǯ �ʱ�ȭ
     kInitializeTCBPool();   
-    gs_stScheduler.viExecuteCount = 0;
-    kInitializeList( &( gs_stScheduler.stReadyList ) );
+    kInitializeList( &( gs_stScheduler.vstReadyList ) );
     kInitializeList( &( gs_stScheduler.stWaitList ) );
     
     // TCB�� �Ҵ� �޾� ������ ������ �½�ũ�� Ŀ�� ������ ���μ����� ����
@@ -254,11 +252,7 @@ void kInitializeScheduler( void )
     //initialize ticket for lottery scheduler
     gs_stScheduler.globaltotaltickets = 100000;
     gs_stScheduler.totaltickets = 0;
-    gs_stScheduler.counter = 0;
-    gs_stScheduler.winner = 0;
-    //allocate tickets for scheduler
-    pstTask->tickets = 1000;
-    gs_stScheduler.totaltickets+=pstTask->tickets;
+
 }
 
 /**
@@ -303,18 +297,35 @@ static TCB* kGetNextTaskToRun( void )
 {
     TCB* pstTarget = NULL;
     int iTaskCount, i, j;
-    
+    int winner = 0;
+    int counter = 0;
     // ť�� �½�ũ�� ������ ��� ť�� �½�ũ�� 1ȸ�� ����� ���, ��� ť�� ���μ�����
     // �纸�Ͽ� �½�ũ�� �������� ���� �� ������ NULL�� ��� �ѹ� �� ����
-    for( j = 0 ; j < 2 ; j++ )
-    {
-        iTaskCount = kGetListCount( &( gs_stScheduler.stReadyList ) );
-        // ���� ������ �½�ũ�� ã������ ����
-        if( pstTarget != NULL )
-        {
+    pstTarget = (TCB*)kGetHeaderFromList(&(gs_stScheduler.vstReadyList));
+    iTaskCount = kGetListCount(&(gs_stScheduler.vstReadyList));
+
+    winner = rand(iTaskCount)%gs_stScheduler.globaltotaltickets;
+
+    if(iTaskCount == 0){
+        return NULL;
+    }
+
+    int idx = 0;
+    while(1){
+        counter += pstTarget->tickets;
+        idx++;
+        if(iTaskCount <= idx){
+            idx = 0;
+        }
+
+        if(winner > counter){
+            pstTarget = (TCB*)kRemoveListFromHeader(&(gs_stScheduler.vstReadyList));
+            gs_stScheduler.totaltickets -= pstTarget->tickets;
             break;
         }
-    }    
+
+    }
+   
     return pstTarget;
 }
 
@@ -326,19 +337,10 @@ static BOOL kAddTaskToReadyList( TCB* pstTask )
     BYTE bPriority;
     
     bPriority = GETPRIORITY( pstTask->qwFlags );
-    if( bPriority == TASK_FLAGS_WAIT )
-    {
-        kAddListToTail( &( gs_stScheduler.stWaitList ), pstTask );
-        return TRUE;
-    }
-    else if( bPriority >= TASK_MAXREADYLISTCOUNT )
-    {
-        return FALSE;
-    }
     
     gs_stScheduler.totaltickets += pstTask->tickets;
 
-    kAddListToTail( &( gs_stScheduler.stReadyList), pstTask );
+    kAddListToTail( &( gs_stScheduler.vstReadyList), pstTask );
     return TRUE;
 }
 
@@ -365,12 +367,7 @@ static TCB* kRemoveTaskFromReadyList( QWORD qwTaskID )
     
     // �½�ũ�� �����ϴ� �غ� ����Ʈ���� �½�ũ ����
     bPriority = GETPRIORITY( pstTarget->qwFlags );
-    if( bPriority >= TASK_MAXREADYLISTCOUNT )
-    {
-        return NULL;
-    }    
-
-    pstTarget = kRemoveList( &( gs_stScheduler.stReadyList), 
+    pstTarget = kRemoveList( &( gs_stScheduler.vstReadyList), 
                      qwTaskID );
     gs_stScheduler.totaltickets-=pstTarget->tickets;
     return pstTarget;
@@ -398,6 +395,7 @@ BOOL kChangePriority( QWORD qwTaskID, BYTE bPriority )
     pstTarget = gs_stScheduler.pstRunningTask;
     if( pstTarget->stLink.qwID == qwTaskID )
     {
+        gs_stScheduler.totaltickets -= pstTarget->tickets;
         SETPRIORITY( pstTarget->qwFlags, bPriority );
         pstTarget->tickets = bPriority * weight;
     }
@@ -413,6 +411,7 @@ BOOL kChangePriority( QWORD qwTaskID, BYTE bPriority )
             if( pstTarget != NULL )
             {
                 // �켱 ������ ����
+                gs_stScheduler.totaltickets -= pstTarget->tickets;
                 SETPRIORITY( pstTarget->qwFlags, bPriority );
                 pstTarget->tickets = bPriority * weight;
             }
@@ -420,12 +419,14 @@ BOOL kChangePriority( QWORD qwTaskID, BYTE bPriority )
         else
         {
             // �켱 ������ �����ϰ� �غ� ����Ʈ�� �ٽ� ����
+            gs_stScheduler.totaltickets -= pstTarget->tickets;
             SETPRIORITY( pstTarget->qwFlags, bPriority );
             pstTarget->tickets = bPriority * weight;
             kAddTaskToReadyList( pstTarget );
         }
     }
     // �Ӱ� ���� ��
+    gs_stScheduler.totaltickets += pstTarget->tickets;
     kUnlockForSystemData( bPreviousFlag );
     return TRUE;    
 }
@@ -438,8 +439,6 @@ void kSchedule( void )
 {
     TCB* pstRunningTask, * pstNextTask;
     BOOL bPreviousFlag;
-    gs_stScheduler.winner = rand()%gs_stScheduler.globaltotaltickets;
-    gs_stScheduler.counter = 0;
     
     // ��ȯ�� �½�ũ�� �־�� ��
     if( kGetReadyTaskCount() < 1 )
@@ -451,22 +450,13 @@ void kSchedule( void )
     // ���� ���ͷ�Ʈ�� �߻����� ���ϵ��� ����
     // �Ӱ� ���� ����
     bPreviousFlag = kLockForSystemData();
-
-    while(1){
-        pstNextTask = kGetNextTaskToRun();
-        gs_stScheduler.counter += pstNextTask->tickets / (gs_stScheduler.totaltickets) * gs_stScheduler.globaltotaltickets;
-
-        if( pstNextTask == NULL )
-        {
-            // �Ӱ� ���� ��
-            kUnlockForSystemData( bPreviousFlag );
-            return ;
-        }
-
-        if(gs_stScheduler.winner <= gs_stScheduler.counter){
-            break;
-        }
-        kAddTaskToReadyList( pstNextTask );
+    pstNextTask = kGetNextTaskToRun();
+    
+    if( pstNextTask == NULL )
+    {
+        // �Ӱ� ���� ��
+        kUnlockForSystemData( bPreviousFlag );
+        return ;
     }
 
     
@@ -510,29 +500,19 @@ BOOL kScheduleInInterrupt( void )
     TCB* pstRunningTask, * pstNextTask;
     char* pcContextAddress;
     BOOL bPreviousFlag;
-    gs_stScheduler.winner = rand()%gs_stScheduler.globaltotaltickets;
-    gs_stScheduler.counter = 0;
+
     
     // �Ӱ� ���� ����
     bPreviousFlag = kLockForSystemData();
-    
-    while(1){
-        pstNextTask = kGetNextTaskToRun();
-        gs_stScheduler.counter += pstNextTask->tickets / (gs_stScheduler.totaltickets) * gs_stScheduler.globaltotaltickets;
+    pstNextTask = kGetNextTaskToRun();
 
-        if( pstNextTask == NULL )
-        {
-            // �Ӱ� ���� ��
-            kUnlockForSystemData( bPreviousFlag );
-            return ;
-        }
-
-        if(gs_stScheduler.winner <= gs_stScheduler.counter){
-            break;
-        }
-        kAddTaskToReadyList( pstNextTask );
+    if( pstNextTask == NULL )
+    {
+        // �Ӱ� ���� ��
+        kUnlockForSystemData( bPreviousFlag );
+        return ;
     }
-    
+ 
     //==========================================================================
     //  �½�ũ ��ȯ ó��   
     //      ���ͷ�Ʈ �ڵ鷯���� ������ ���ؽ�Ʈ�� �ٸ� ���ؽ�Ʈ�� ����� ������� ó��
@@ -671,7 +651,7 @@ int kGetReadyTaskCount( void )
 
     // �Ӱ� ���� ����
     bPreviousFlag = kLockForSystemData();
-    iTotalCount = kGetListCount( &( gs_stScheduler.stReadyList));
+    iTotalCount = kGetListCount( &( gs_stScheduler.vstReadyList));
     // ��� �غ� ť�� Ȯ���Ͽ� �½�ũ ������ ����
 
     kUnlockForSystemData( bPreviousFlag );
@@ -917,7 +897,9 @@ void kHaltProcessorByLoad( void )
     }
 }
 
-static int rand(){
-    seed = generateSeed();
+static int rand(int val){
+    if(seed<0)seed = -seed;
+    seed = (seed * 4567+78456) >> 8;
+    seed = val%seed;
     return seed;
 }

@@ -138,8 +138,7 @@ typedef struct kTaskControlBlockStruct
     QWORD qwStackSize;
 
     //티켓 수
-    QWORD pass;
-    QWORD stride;
+    int tickets
     //
 } TCB;
 
@@ -166,22 +165,25 @@ typedef struct kSchedulerStruct
     
     // ������ �½�ũ�� �غ����� ����Ʈ, �½�ũ�� �켱 ������ ���� ����
     //in lottery it dosent have to be an layerd architecture
-    LIST stReadyList;
+    LIST vstReadyList;
 
     // ������ �½�ũ�� ������� ����Ʈ
     LIST stWaitList;
-    
-    // �� �켱 �������� �½�ũ�� ������ Ƚ���� �����ϴ� �ڷᱸ��
-    //lottery scheduler doesnt need lots of list
-    int viExecuteCount;
-    
+
+
     // ���μ��� ���ϸ� ����ϱ� ���� �ڷᱸ��
     QWORD qwProcessorLoad;
     
     // ���� �½�ũ(Idle Task)���� ����� ���μ��� �ð�
     QWORD qwSpendProcessorTimeInIdleTask;
     //총 전역 티켓량
-    QWORD totalTaskNum;
+    int globaltotaltickets;
+    //카운터
+    int counter;
+    //winner
+    int winner;
+    //총 티켓 갯수
+    int totaltickets;
 
 } SCHEDULER;
 
@@ -233,6 +235,7 @@ static TCB* kGetProcessByThread( TCB* pstThread );
 void kIdleTask( void );
 void kHaltProcessorByLoad( void );
 
+static int seed;
 
-
+static int rand();
 #endif /*__TASK_H__*/
