@@ -301,7 +301,7 @@ static TCB* kGetNextTaskToRun( void )
     int counter = 0;
     // ť�� �½�ũ�� ������ ��� ť�� �½�ũ�� 1ȸ�� ����� ���, ��� ť�� ���μ�����
     // �纸�Ͽ� �½�ũ�� �������� ���� �� ������ NULL�� ��� �ѹ� �� ����
-    pstTarget = (TCB*)kGetHeaderFromList(&(gs_stScheduler.vstReadyList));
+    //pstTarget = (TCB*)kGetHeaderFromList(&(gs_stScheduler.vstReadyList));
     iTaskCount = kGetListCount(&(gs_stScheduler.vstReadyList));
 
     winner = rand(iTaskCount)%gs_stScheduler.globaltotaltickets;
@@ -312,18 +312,20 @@ static TCB* kGetNextTaskToRun( void )
 
     int idx = 0;
     while(1){
-        counter += pstTarget->tickets;
+        pstTarget = (TCB*)kRemoveListFromHeader(&(gs_stScheduler.vstReadyList));
+
+        counter += (pstTarget->tickets) / (gs_stScheduler.totaltickets+1) * gs_stScheduler.globaltotaltickets;
         idx++;
         if(iTaskCount <= idx){
             idx = 0;
         }
 
         if(winner > counter){
-            pstTarget = (TCB*)kRemoveListFromHeader(&(gs_stScheduler.vstReadyList));
             gs_stScheduler.totaltickets -= pstTarget->tickets;
             break;
         }
 
+        kAddListToTail(&(gs_stScheduler.vstReadyList), pstTarget);
     }
    
     return pstTarget;
