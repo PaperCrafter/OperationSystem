@@ -304,13 +304,14 @@ static TCB* kGetNextTaskToRun( void )
     //pstTarget = (TCB*)kGetHeaderFromList(&(gs_stScheduler.vstReadyList));
     iTaskCount = kGetListCount(&(gs_stScheduler.vstReadyList));
 
-    winner = rand(iTaskCount)%gs_stScheduler.globaltotaltickets;
+    seed = (((gs_stScheduler.totaltickets) * 45) >> 4) % (seed+1);
+    winner = seed%gs_stScheduler.globaltotaltickets;
 
     if(iTaskCount == 0){
         return NULL;
     }
 
-    int idx = 0;
+
     while(1){
         pstTarget = (TCB*)kRemoveListFromHeader(&(gs_stScheduler.vstReadyList));
         counter += (pstTarget->tickets) / (gs_stScheduler.totaltickets) * gs_stScheduler.globaltotaltickets;
@@ -895,8 +896,6 @@ void kHaltProcessorByLoad( void )
 }
 
 static int rand(int val){
-    if(seed<0)seed = -seed;
-    seed = (seed * 4567+78456) >> 8;
-    seed = val%seed;
-    return seed;
+    val = (val * 45) >> 4;
+    return val;
 }
