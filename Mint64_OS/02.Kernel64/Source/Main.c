@@ -75,13 +75,13 @@ void Main( void )
     // keyboard activate
     if( kInitializeKeyboard() == TRUE )
     {
-        kSetCursor( 45, iCursorY++ );
+        kSetCursor( 45, --iCursorY );
         kPrintf( "Pass\n" );
         kChangeKeyboardLED( FALSE, FALSE, FALSE );
     }
     else
     {
-        kSetCursor( 45, iCursorY++ );
+        kSetCursor( 45, iCursorY );
         kPrintf( "Fail\n" );
         while( 1 ) ;
     }
@@ -91,7 +91,7 @@ void Main( void )
     kInitializePIC();
     kMaskPICInterrupt( 0 );
     kEnableInterrupt();
-    kSetCursor( 45, --iCursorY );
+    kSetCursor( 45, iCursorY );
     kPrintf( "Pass\n" );
 
     //kPrintString(0, 18, "Write to 0x1ff000 [  ]");
