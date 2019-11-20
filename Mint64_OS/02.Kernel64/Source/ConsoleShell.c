@@ -40,6 +40,10 @@ SHELLCOMMANDENTRY gs_vstCommandTable[] =
 		{ "showData", "show task test case", kShowData },		
 };                                     
 
+// hw 4
+QWORD qwOneSec = 0;
+QWORD qwStart = 0;
+
 //==============================================================================
 //  ���� ���� �����ϴ� �ڵ�
 //==============================================================================
@@ -73,6 +77,7 @@ void kStartConsoleShell( void )
         kMemSet( vcCommandBuffer, '\0', CONSOLESHELL_MAXCOMMANDBUFFERCOUNT );
     // ============================================================            
         
+   
         
     while( 1 )
     {        
@@ -470,7 +475,7 @@ static void kStringToDecimalHexTest( const char* pcParameterBuffer )
             lValue = kAToI( vcParameter, 10 );
             kPrintf( "Decimal Value = %d\n", lValue );
         }
-        
+        (double)
         iCount++;
     }
 }
@@ -595,7 +600,7 @@ static void kMeasureProcessorSpeed( const char* pcParameterBuffer )
 
         kPrintf( "." );
     }
-    // Ÿ�̸� ����
+    
     kInitializePIT( MSTOCOUNT( 1 ), TRUE );    
     kEnableInterrupt();
     
@@ -741,7 +746,7 @@ static void kTestTask2( void )
     iOffset = ( pstRunningTask->stLink.qwID & 0xFFFFFFFF ) * 2;
     iOffset = CONSOLE_WIDTH * CONSOLE_HEIGHT - 
         ( iOffset % ( CONSOLE_WIDTH * CONSOLE_HEIGHT ) );
-
+        
     while( 1 )
     {
     	// hw 4
@@ -794,7 +799,7 @@ static void kCreateTestTask( const char* pcParameterBuffer )
         kPrintf( "Task1 %d Created\n", i );
         break;
         
-    // Ÿ�� 2 �½�ũ ����
+    // task2
     case 2:
     default:
         for( i = 0 ; i < kAToI( vcCount, 10 ) ; i++ )
