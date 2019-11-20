@@ -176,12 +176,10 @@ typedef struct kSchedulerStruct
     
     // ���� �½�ũ(Idle Task)���� ����� ���μ��� �ð�
     QWORD qwSpendProcessorTimeInIdleTask;
+    
     //총 전역 티켓량
     int globaltotaltickets;
-    //카운터
-    int counter;
-    //winner
-    int winner;
+
     //총 티켓 갯수
     int totaltickets;
 

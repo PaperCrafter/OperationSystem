@@ -138,8 +138,7 @@ typedef struct kTaskControlBlockStruct
     QWORD qwStackSize;
 
     //티켓 수
-    QWORD stride;
-    QWORD pass;
+    int tickets
     //
 } TCB;
 
@@ -170,13 +169,19 @@ typedef struct kSchedulerStruct
 
     // ������ �½�ũ�� ������� ����Ʈ
     LIST stWaitList;
-    
+
+
     // ���μ��� ���ϸ� ����ϱ� ���� �ڷᱸ��
     QWORD qwProcessorLoad;
     
     // ���� �½�ũ(Idle Task)���� ����� ���μ��� �ð�
     QWORD qwSpendProcessorTimeInIdleTask;
     
+    //총 전역 티켓량
+    int globaltotaltickets;
+
+    //총 티켓 갯수
+    int totaltickets;
 
 } SCHEDULER;
 
@@ -228,5 +233,7 @@ static TCB* kGetProcessByThread( TCB* pstThread );
 void kIdleTask( void );
 void kHaltProcessorByLoad( void );
 
+static int seed;
 
+static int rand();
 #endif /*__TASK_H__*/

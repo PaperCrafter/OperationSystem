@@ -151,8 +151,8 @@ TCB* kCreateTask( QWORD qwFlags, void* pvMemoryAddress, QWORD qwMemorySize,
     // �������� ID�� �½�ũ ID�� �����ϰ� ����
     pstTask->stThreadLink.qwID = pstTask->stLink.qwID;   
     //allocate tickets
-    pstTask->tickets = weight * bPriority;
-    gs_stScheduler.totaltickets +=pstTask->tickets;
+    pstTask->tickets = ((int)bPriority * weight);
+    gs_stScheduler.totaltickets += pstTask->tickets;
     // �Ӱ� ���� ��
     kUnlockForSystemData( bPreviousFlag );
     
@@ -313,14 +313,9 @@ static TCB* kGetNextTaskToRun( void )
     int idx = 0;
     while(1){
         pstTarget = (TCB*)kRemoveListFromHeader(&(gs_stScheduler.vstReadyList));
+        counter += (pstTarget->tickets) / (gs_stScheduler.totaltickets) * gs_stScheduler.globaltotaltickets;
 
-        counter += (pstTarget->tickets) / (gs_stScheduler.totaltickets+1) * gs_stScheduler.globaltotaltickets;
-        idx++;
-        if(iTaskCount <= idx){
-            idx = 0;
-        }
-
-        if(winner > counter){
+        if(winner <= counter){
             gs_stScheduler.totaltickets -= pstTarget->tickets;
             break;
         }
@@ -399,7 +394,7 @@ BOOL kChangePriority( QWORD qwTaskID, BYTE bPriority )
     {
         gs_stScheduler.totaltickets -= pstTarget->tickets;
         SETPRIORITY( pstTarget->qwFlags, bPriority );
-        pstTarget->tickets = bPriority * weight;
+        pstTarget->tickets = ((int)bPriority * weight);
     }
     // �������� �½�ũ�� �ƴϸ� �غ� ����Ʈ���� ã�Ƽ� �ش� �켱 ������ ����Ʈ�� �̵�
     else
@@ -415,7 +410,7 @@ BOOL kChangePriority( QWORD qwTaskID, BYTE bPriority )
                 // �켱 ������ ����
                 gs_stScheduler.totaltickets -= pstTarget->tickets;
                 SETPRIORITY( pstTarget->qwFlags, bPriority );
-                pstTarget->tickets = bPriority * weight;
+                pstTarget->tickets = ((int)bPriority * weight);
             }
         }
         else
@@ -423,7 +418,7 @@ BOOL kChangePriority( QWORD qwTaskID, BYTE bPriority )
             // �켱 ������ �����ϰ� �غ� ����Ʈ�� �ٽ� ����
             gs_stScheduler.totaltickets -= pstTarget->tickets;
             SETPRIORITY( pstTarget->qwFlags, bPriority );
-            pstTarget->tickets = bPriority * weight;
+            pstTarget->tickets = ((int)bPriority * weight);
             kAddTaskToReadyList( pstTarget );
         }
     }
