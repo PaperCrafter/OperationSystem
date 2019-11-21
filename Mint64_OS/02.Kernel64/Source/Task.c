@@ -320,6 +320,7 @@ static TCB* kGetNextTaskToRun( void )
     }
 
     winner = seed% gs_stScheduler.globaltotaltickets;
+    seed = winner * 3;
 
     while(1){
         pstTarget = (TCB*)kRemoveListFromHeader(&(gs_stScheduler.vstReadyList));
