@@ -16,6 +16,12 @@
 #include "Task.h"
 #include "Synchronization.h"
 
+//hw4
+QWORD qwOneSec = 0;
+QWORD qwStart = 0;
+int taskNum = 0;
+int data[20][10];
+
 // Ŀ�ǵ� ���̺� ����
 SHELLCOMMANDENTRY gs_vstCommandTable[] =
 {
@@ -38,6 +44,7 @@ SHELLCOMMANDENTRY gs_vstCommandTable[] =
         { "testmutex", "Test Mutex Function", kTestMutex },
         { "testthread", "Test Thread And Process Function", kTestThread },
         { "showmatrix", "Show Matrix Screen", kShowMatrix },
+        { "showdata", "show task test case", kShowData},
 };                                     
 
 //==============================================================================
@@ -598,7 +605,10 @@ static void kMeasureProcessorSpeed( const char* pcParameterBuffer )
     // Ÿ�̸� ����
     kInitializePIT( MSTOCOUNT( 1 ), TRUE );    
     kEnableInterrupt();
-    
+        
+    //hw4
+    qwOneSec = qwTotalTSC / 10;
+
     kPrintf( "\nCPU Speed = %d MHz\n", qwTotalTSC / 10 / 1000 / 1000 );
 }
 
@@ -720,6 +730,11 @@ static void kTestTask2( void )
     CHARACTER* pstScreen = ( CHARACTER* ) CONSOLE_VIDEOMEMORYADDRESS;
     TCB* pstRunningTask;
     char vcData[ 4 ] = { '-', '\\', '|', '/' };
+//hw4
+    if(qwStart == 0)qwStart = kReadTSC();
+    int time = 1;
+    int count = 0;
+    int num = taskNum++;
     
     // �ڽ��� ID�� �� ȭ�� ���������� ���
     pstRunningTask = kGetRunningTask();
@@ -729,6 +744,13 @@ static void kTestTask2( void )
 
     while( 1 )
     {
+        if(kReadTSC() -qwStart >= qwOneSec*time){
+            if(time <=10) data[time][num] = count;
+            time++;
+            count = 0;
+        }
+
+        count++;
         // ȸ���ϴ� �ٶ����� ǥ��
         pstScreen[ iOffset ].bCharactor = vcData[ i % 4 ];
         // ���� ����
@@ -1143,5 +1165,15 @@ static void kShowMatrix( const char* pcParameterBuffer )
     else
     {
         kPrintf( "Matrix Process Create Fail\n" );
+    }
+}
+
+static void kShowData(void){
+    for(int i =1; i <= 10; i++){
+        kPrintf("[Time %d]", i);
+        for(int j =0; j<taskNum; j++){
+            kPrintf(" / task%d[%d]", j+1, data[i][j]);
+        }
+        kPrintf("\n");
     }
 }
