@@ -40,10 +40,6 @@ SHELLCOMMANDENTRY gs_vstCommandTable[] =
 		{ "showData", "show task test case", kShowData },		
 };                                     
 
-// hw 4
-QWORD qwOneSec = 0;
-QWORD qwStart = 0;
-
 //==============================================================================
 //  ���� ���� �����ϴ� �ڵ�
 //==============================================================================
@@ -804,13 +800,13 @@ static void kCreateTestTask( const char* pcParameterBuffer )
     default:
         for( i = 0 ; i < kAToI( vcCount, 10 ) ; i++ )
         {   
-        	/*
+        	
          	if( kCreateTask( TASK_FLAGS_HIGH | TASK_FLAGS_THREAD, 0, 0, ( QWORD ) kTestTask2 ) == NULL )
         	{
         	break;
         	}       	        	
-        	*/
         	
+        	/*
         	if(i%3 == 0){
         		if( kCreateTask( TASK_FLAGS_HIGH | TASK_FLAGS_THREAD, 0, 0, ( QWORD ) kTestTask2 ) == NULL )
         		{
@@ -829,7 +825,7 @@ static void kCreateTestTask( const char* pcParameterBuffer )
         		break;
         		}
         	} 
-        	
+        	*/
         }
         
         kPrintf( "Task2 %d Created\n", i );
