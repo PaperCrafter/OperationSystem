@@ -324,7 +324,8 @@ static TCB* kGetNextTaskToRun( void )
 
     while(1){
         pstTarget = (TCB*)kRemoveListFromHeader(&(gs_stScheduler.vstReadyList));
-        counter += pstTarget->tickets / (gs_stScheduler.totaltickets) * gs_stScheduler.globaltotaltickets;
+
+        counter += ((int)(pstTarget->tickets * gs_stScheduler.globaltotaltickets) / (int)gs_stScheduler.totaltickets);
         if(winner <= counter){
             gs_stScheduler.totaltickets -= pstTarget->tickets;
             break;
