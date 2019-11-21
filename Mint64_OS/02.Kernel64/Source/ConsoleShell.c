@@ -1,11 +1,3 @@
-/**
- *  file    ConsoleShell.c
- *  date    2009/01/31
- *  author  kkamagui 
- *          Copyright(c)2008 All rights reserved by kkamagui
- *  brief   �ܼ� �п� ���õ� �ҽ� ����
- */
-
 #include "ConsoleShell.h"
 #include "Console.h"
 #include "Keyboard.h"
@@ -16,10 +8,11 @@
 #include "Task.h"
 #include "Synchronization.h"
 
-//hw4
+// hw 4
 QWORD qwOneSec = 0;
 QWORD qwStart = 0;
-int taskNum = 0;
+
+int taskNum=0;
 int data[20][10];
 
 // Ŀ�ǵ� ���̺� ����
@@ -44,7 +37,7 @@ SHELLCOMMANDENTRY gs_vstCommandTable[] =
         { "testmutex", "Test Mutex Function", kTestMutex },
         { "testthread", "Test Thread And Process Function", kTestThread },
         { "showmatrix", "Show Matrix Screen", kShowMatrix },
-        { "showdata", "show task test case", kShowData},
+		{ "showData", "show task test case", kShowData },		
 };                                     
 
 //==============================================================================
@@ -80,11 +73,12 @@ void kStartConsoleShell( void )
         kMemSet( vcCommandBuffer, '\0', CONSOLESHELL_MAXCOMMANDBUFFERCOUNT );
     // ============================================================            
         
+   
         
     while( 1 )
     {        
         bKey = kGetCh();
-
+        
         // hw3 history initialize ============================================================
         
         if( bKey != KEY_TAB ) commandMore =0;
@@ -477,7 +471,7 @@ static void kStringToDecimalHexTest( const char* pcParameterBuffer )
             lValue = kAToI( vcParameter, 10 );
             kPrintf( "Decimal Value = %d\n", lValue );
         }
-        
+        (double)
         iCount++;
     }
 }
@@ -602,13 +596,13 @@ static void kMeasureProcessorSpeed( const char* pcParameterBuffer )
 
         kPrintf( "." );
     }
-    // Ÿ�̸� ����
+    
     kInitializePIT( MSTOCOUNT( 1 ), TRUE );    
     kEnableInterrupt();
-        
+    
     //hw4
-    qwOneSec = qwTotalTSC / 10;
-
+    qwOneSec = qwTotalTSC / 10 ;
+    
     kPrintf( "\nCPU Speed = %d MHz\n", qwTotalTSC / 10 / 1000 / 1000 );
 }
 
@@ -630,14 +624,21 @@ static void kShowDateAndTime( const char* pcParameterBuffer )
     kPrintf( "Time: %d:%d:%d\n", bHour, bMinute, bSecond );
 }
 
-
-//TCB자료구조와 스택 정의
 static TCB gs_vstTask[ 2 ] = { 0, };
 static QWORD gs_vstStack[ 1024 ] = { 0, };
 
-/**
- *  �½�ũ ��ȯ�� �׽�Ʈ�ϴ� �½�ũ
- */
+
+//hw4
+static void kShowData( void ){
+	for(int i=1; i<=10 ; i++){
+		kPrintf("[Time %d]", i);
+		for(int j=0; j<taskNum; j++){
+			kPrintf(" / task%d[%d]", j+1, data[i][j]);
+		}
+		kPrintf("\n");
+	}
+}
+
 static void kTestTask( void )
 {
     int i = 0;
@@ -653,7 +654,6 @@ static void kTestTask( void )
         kSwitchContext( &( gs_vstTask[ 1 ].stContext ), &( gs_vstTask[ 0 ].stContext ) );
     }
 }
-
 
 /**
  *  �½�ũ 1
@@ -730,8 +730,9 @@ static void kTestTask2( void )
     CHARACTER* pstScreen = ( CHARACTER* ) CONSOLE_VIDEOMEMORYADDRESS;
     TCB* pstRunningTask;
     char vcData[ 4 ] = { '-', '\\', '|', '/' };
-//hw4
-    if(qwStart == 0)qwStart = kReadTSC();
+    
+    // hw 4
+    if(qwStart == 0 ) qwStart = kReadTSC();    
     int time = 1;
     int count = 0;
     int num = taskNum++;
@@ -741,23 +742,25 @@ static void kTestTask2( void )
     iOffset = ( pstRunningTask->stLink.qwID & 0xFFFFFFFF ) * 2;
     iOffset = CONSOLE_WIDTH * CONSOLE_HEIGHT - 
         ( iOffset % ( CONSOLE_WIDTH * CONSOLE_HEIGHT ) );
-
+        
     while( 1 )
     {
-        if(kReadTSC() -qwStart >= qwOneSec*time){
-            if(time <=10) data[time][num] = count;
-            time++;
-            count = 0;
-        }
-
-        count++;
-        // ȸ���ϴ� �ٶ����� ǥ��
+    	// hw 4
+    	if(kReadTSC()-qwStart >= qwOneSec*time) {
+    		
+    		//kPrintf("\n[%d sec] / Task ID[0x%Q] / task count == %d",time, pstRunningTask->stLink.qwID , count);    		
+    		if(time <= 10 ) data[time][num]=count;
+    		
+    		time++;    		
+    		count = 0;
+    	}   
+    	count ++;
+    	
         pstScreen[ iOffset ].bCharactor = vcData[ i % 4 ];
         // ���� ����
         pstScreen[ iOffset ].bAttribute = ( iOffset % 15 ) + 1;
         i++;
         
-        // �ٸ� �½�ũ�� ��ȯ
         //kSchedule();
     }
 }
@@ -792,15 +795,37 @@ static void kCreateTestTask( const char* pcParameterBuffer )
         kPrintf( "Task1 %d Created\n", i );
         break;
         
-    // Ÿ�� 2 �½�ũ ����
+    // task2
     case 2:
     default:
         for( i = 0 ; i < kAToI( vcCount, 10 ) ; i++ )
-        {    
-            if( kCreateTask( TASK_FLAGS_LOW | TASK_FLAGS_THREAD, 0, 0, ( QWORD ) kTestTask2 ) == NULL )
-            {
-                break;
-            }
+        {   
+        	/*
+         	if( kCreateTask( TASK_FLAGS_HIGH | TASK_FLAGS_THREAD, 0, 0, ( QWORD ) kTestTask2 ) == NULL )
+        	{
+        	break;
+        	}       	        	
+        	*/      	
+        	
+        	if(i%3 == 0){
+        		if( kCreateTask( TASK_FLAGS_HIGH | TASK_FLAGS_THREAD, 0, 0, ( QWORD ) kTestTask2 ) == NULL )
+        		{
+        		break;
+        		}
+        	}
+        	else if(i%3 == 1){
+        		if( kCreateTask( TASK_FLAGS_MEDIUM | TASK_FLAGS_THREAD, 0, 0, ( QWORD ) kTestTask2 ) == NULL )
+        		{
+        		break;
+        		}
+        	}
+        	else if(i%3 == 2){
+        		if( kCreateTask( TASK_FLAGS_LOW | TASK_FLAGS_THREAD, 0, 0, ( QWORD ) kTestTask2 ) == NULL )
+        		{
+        		break;
+        		}
+        	} 
+        	
         }
         
         kPrintf( "Task2 %d Created\n", i );
@@ -856,7 +881,7 @@ static void kShowTaskList( const char* pcParameterBuffer )
     int i;
     TCB* pstTCB;
     int iCount = 0;
-
+    
     kPrintf( "=========== Task Total Count [%d] ===========\n", kGetTaskCount() );
     for( i = 0 ; i < TASK_MAXCOUNT ; i++ )
     {
@@ -1165,15 +1190,5 @@ static void kShowMatrix( const char* pcParameterBuffer )
     else
     {
         kPrintf( "Matrix Process Create Fail\n" );
-    }
-}
-
-static void kShowData(void){
-    for(int i =1; i <= 10; i++){
-        kPrintf("[Time %d]", i);
-        for(int j =0; j<taskNum; j++){
-            kPrintf(" / task%d[%d]", j+1, data[i][j]);
-        }
-        kPrintf("\n");
     }
 }

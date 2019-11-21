@@ -13,7 +13,7 @@
 static SCHEDULER gs_stScheduler;
 static TCBPOOLMANAGER gs_stTCBPoolManager;
 
-static int weight = 100;
+static int weight = 50;
 static int seed = 123412;
 static int next =0;
 //==============================================================================
@@ -174,7 +174,7 @@ TCB* kCreateTask( QWORD qwFlags, void* pvMemoryAddress, QWORD qwMemorySize,
     bPriority = GETPRIORITY(qwFlags);
     
     //allocate tickets
-    pstTask->tickets = (weight * (int)(bPriority));
+    pstTask->tickets = (weight*(int)(bPriority)*(int)(bPriority)*(int)(bPriority)*(int)(bPriority)*(int)(bPriority));
 
 
     // �½�ũ�� �غ� ����Ʈ�� ����
@@ -397,15 +397,13 @@ BOOL kChangePriority( QWORD qwTaskID, BYTE bPriority )
     // �Ӱ� ���� ����
     bPreviousFlag = kLockForSystemData();
     
-    // ���� �������� �½�ũ�̸� �켱 ������ ����
-    // PIT ��Ʈ�ѷ��� ���ͷ�Ʈ(IRQ 0)�� �߻��Ͽ� �½�ũ ��ȯ�� ����� �� ����� 
-    // �켱 ������ ����Ʈ�� �̵�
     pstTarget = gs_stScheduler.pstRunningTask;
     if( pstTarget->stLink.qwID == qwTaskID )
     {
         gs_stScheduler.totaltickets -= pstTarget->tickets;
         SETPRIORITY( pstTarget->qwFlags, bPriority );
-        pstTarget->tickets = ((int)(bPriority) * weight);
+        pstTarget->tickets = (weight*(int)(bPriority)*(int)(bPriority)*(int)(bPriority)*(int)(bPriority)*(int)(bPriority));
+        
     }
     // �������� �½�ũ�� �ƴϸ� �غ� ����Ʈ���� ã�Ƽ� �ش� �켱 ������ ����Ʈ�� �̵�
     else
@@ -417,11 +415,10 @@ BOOL kChangePriority( QWORD qwTaskID, BYTE bPriority )
             // �½�ũ ID�� ���� ã�Ƽ� ����
             pstTarget = kGetTCBInTCBPool( GETTCBOFFSET( qwTaskID ) );
             if( pstTarget != NULL )
-            {
-                // �켱 ������ ����
+            {                
                 gs_stScheduler.totaltickets -= pstTarget->tickets;
                 SETPRIORITY( pstTarget->qwFlags, bPriority );
-                pstTarget->tickets = ((int)(bPriority) * weight);
+                pstTarget->tickets = (weight*(int)(bPriority)*(int)(bPriority)*(int)(bPriority)*(int)(bPriority)*(int)(bPriority));
             }
         }
         else
@@ -907,7 +904,7 @@ void kHaltProcessorByLoad( void )
 
 static int rand()
 {
-	seed = seed * 15921984425 + 43215975;
+	seed = seed * 159219844257 + 43215975;
 	int res = (int)(seed/751968);
     return res;
 }
