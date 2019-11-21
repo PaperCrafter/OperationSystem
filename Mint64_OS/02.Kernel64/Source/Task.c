@@ -315,12 +315,13 @@ static TCB* kGetNextTaskToRun( void )
     //schedule
     for(i =0; i < iTaskCount; i++){
         tmpNode = (TCB*)kRemoveListFromHeader(&(gs_stScheduler.vstReadyList));
-        counter += tmpNode->tickets;
+        counter += (tmpNode->tickets);
 
         if(counter >= winner){
             pstTarget = tmpNode;
             break;
         }
+
         kAddListToTail(&(gs_stScheduler.vstReadyList), tmpNode);
     }
 
