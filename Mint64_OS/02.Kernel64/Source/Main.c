@@ -6,6 +6,8 @@
 #include "ConsoleShell.h"
 #include "Task.h"
 #include "PIT.h"
+#include "DynamicMemory.h"
+#include "HardDisk.h"
 
 void Main( void )
 {	
@@ -66,8 +68,13 @@ void Main( void )
     
     kPrintf( "TCB Pool And Scheduler Initialize...........[Pass]\n" );
     iCursorY++;
-
     kInitializeScheduler();
+
+    // ���� �޸� �ʱ�ȭ
+    kPrintf( "Dynamic Memory Initialize...................[Pass]\n" );
+    iCursorY++;
+    kInitializeDynamicMemory();
+
     kInitializePIT( MSTOCOUNT(1), 1 );
 
     kPrintf( "Keyboard Activate And Queue Initialize......[    ]" );
@@ -93,6 +100,19 @@ void Main( void )
     kEnableInterrupt();
     kSetCursor( 45, iCursorY );
     kPrintf( "Pass\n" );
+
+    // �ϵ� ��ũ�� �ʱ�ȭ
+    kPrintf( "HDD Initialize..............................[    ]" );
+    if( kInitializeHDD() == TRUE )
+    {
+        kSetCursor( 45, iCursorY++ );
+        kPrintf( "Pass\n" );
+    }
+    else
+    {
+        kSetCursor( 45, iCursorY++ );
+        kPrintf( "Fail\n" );
+    }
 
     //kPrintString(0, 18, "Write to 0x1ff000 [  ]");
     //writeTo(0x1ff000, 18);

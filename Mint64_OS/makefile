@@ -58,6 +58,7 @@ debug:
 
 run:
 	qemu-system-x86_64 -L . -fda Disk.img -m 64 -localtime -M pc
+	#qemu-system-x86_64 -L . -m 64 -fda ./Disk.img -hda ./HDD.img -boot a -localtime -M pc
 
 clean:
 	make -C 00.BootLoader clean

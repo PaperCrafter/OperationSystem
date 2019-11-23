@@ -7,6 +7,8 @@
 #include "AssemblyUtility.h"
 #include "Task.h"
 #include "Synchronization.h"
+#include "DynamicMemory.h"
+#include "HardDisk.h"
 
 // hw 4
 QWORD qwOneSec = 0;
@@ -37,7 +39,14 @@ SHELLCOMMANDENTRY gs_vstCommandTable[] =
         { "testmutex", "Test Mutex Function", kTestMutex },
         { "testthread", "Test Thread And Process Function", kTestThread },
         { "showmatrix", "Show Matrix Screen", kShowMatrix },
-		{ "showData", "show task test case", kShowData },		
+		{ "showData", "show task test case", kShowData },
+        { "testpie", "Test PIE Calculation", kTestPIE },               
+        { "dynamicmeminfo", "Show Dyanmic Memory Information", kShowDyanmicMemoryInformation },
+        { "testseqalloc", "Test Sequential Allocation & Free", kTestSequentialAllocation },
+        { "testranalloc", "Test Random Allocation & Free", kTestRandomAllocation },
+        { "hddinfo", "Show HDD Information", kShowHDDInformation },
+        { "readsector", "Read HDD Sector, ex)readsector 0(LBA) 10(count)", kReadSector },
+        { "writesector", "Write HDD Sector, ex)writesector 0(LBA) 10(count)", kWriteSector },		
 };                                     
 
 //==============================================================================
@@ -410,6 +419,18 @@ static void kHelp( const char* pcCommandBuffer )
         kGetCursor( &iCursorX, &iCursorY );
         kSetCursor( iMaxCommandLength, iCursorY );
         kPrintf( "  - %s\n", gs_vstCommandTable[ i ].pcHelp );
+
+        // ����� ���� ��� ������ ������
+        if( ( i != 0 ) && ( ( i % 20 ) == 0 ) )
+        {
+            kPrintf( "Press any key to continue... ('q' is exit) : " );
+            if( kGetCh() == 'q' )
+            {
+                kPrintf( "\n" );
+                break;
+            }        
+            kPrintf( "\n" );
+        }
     }
 }
 
@@ -1191,4 +1212,440 @@ static void kShowMatrix( const char* pcParameterBuffer )
     {
         kPrintf( "Matrix Process Create Fail\n" );
     }
+}
+
+
+/**
+ *  FPU�� �׽�Ʈ�ϴ� �½�ũ
+ */
+static void kFPUTestTask( void )
+{
+    double dValue1;
+    double dValue2;
+    TCB* pstRunningTask;
+    QWORD qwCount = 0;
+    QWORD qwRandomValue;
+    int i;
+    int iOffset;
+    char vcData[ 4 ] = { '-', '\\', '|', '/' };
+    CHARACTER* pstScreen = ( CHARACTER* ) CONSOLE_VIDEOMEMORYADDRESS;
+
+    pstRunningTask = kGetRunningTask();
+
+    // �ڽ��� ID�� �� ȭ�� ���������� ���
+    iOffset = ( pstRunningTask->stLink.qwID & 0xFFFFFFFF ) * 2;
+    iOffset = CONSOLE_WIDTH * CONSOLE_HEIGHT - 
+        ( iOffset % ( CONSOLE_WIDTH * CONSOLE_HEIGHT ) );
+
+    // ������ ������ �ݺ��ϸ鼭 ������ ����� ����
+    while( 1 )
+    {
+        dValue1 = 1;
+        dValue2 = 1;
+        
+        // �׽�Ʈ�� ���� ������ ����� 2�� �ݺ��ؼ� ����
+        for( i = 0 ; i < 10 ; i++ )
+        {
+            qwRandomValue = kRandom();
+            dValue1 *= ( double ) qwRandomValue;
+            dValue2 *= ( double ) qwRandomValue;
+
+            kSleep( 1 );
+            
+            qwRandomValue = kRandom();
+            dValue1 /= ( double ) qwRandomValue;
+            dValue2 /= ( double ) qwRandomValue;
+        }
+        
+        if( dValue1 != dValue2 )
+        {
+            kPrintf( "Value Is Not Same~!!! [%f] != [%f]\n", dValue1, dValue2 );
+            break;
+        }
+        qwCount++;
+
+        // ȸ���ϴ� �ٶ����� ǥ��
+        pstScreen[ iOffset ].bCharactor = vcData[ qwCount % 4 ];
+
+        // ���� ����
+        pstScreen[ iOffset ].bAttribute = ( iOffset % 15 ) + 1;
+    }
+}
+
+/**
+ *  ������(PIE)�� ���
+ */
+static void kTestPIE( const char* pcParameterBuffer )
+{
+    double dResult;
+    int i;
+    
+    kPrintf( "PIE Cacluation Test\n" );
+    kPrintf( "Result: 355 / 113 = " );
+    dResult = ( double ) 355 / 113;
+    kPrintf( "%d.%d%d\n", ( QWORD ) dResult, ( ( QWORD ) ( dResult * 10 ) % 10 ),
+             ( ( QWORD ) ( dResult * 100 ) % 10 ) );
+    
+    // �Ǽ��� ����ϴ� �½�ũ�� ����
+    for( i = 0 ; i < 100 ; i++ )
+    {
+        kCreateTask( TASK_FLAGS_LOW | TASK_FLAGS_THREAD, 0, 0, ( QWORD ) kFPUTestTask );
+    }
+}
+
+/**
+ *  ���� �޸� ������ ǥ��
+ */
+static void kShowDyanmicMemoryInformation( const char* pcParameterBuffer )
+{
+    QWORD qwStartAddress, qwTotalSize, qwMetaSize, qwUsedSize;
+    
+    kGetDynamicMemoryInformation( &qwStartAddress, &qwTotalSize, &qwMetaSize, 
+            &qwUsedSize );
+
+    kPrintf( "============ Dynamic Memory Information ============\n" );
+    kPrintf( "Start Address: [0x%Q]\n", qwStartAddress );
+    kPrintf( "Total Size:    [0x%Q]byte, [%d]MB\n", qwTotalSize, 
+            qwTotalSize / 1024 / 1024 );
+    kPrintf( "Meta Size:     [0x%Q]byte, [%d]KB\n", qwMetaSize, 
+            qwMetaSize / 1024 );
+    kPrintf( "Used Size:     [0x%Q]byte, [%d]KB\n", qwUsedSize, qwUsedSize / 1024 );
+}
+
+/**
+ *  ��� ���� ����Ʈ�� ������ ���������� �Ҵ��ϰ� �����ϴ� �׽�Ʈ
+ */
+static void kTestSequentialAllocation( const char* pcParameterBuffer )
+{
+    DYNAMICMEMORY* pstMemory;
+    long i, j, k;
+    QWORD* pqwBuffer;
+    
+    kPrintf( "============ Dynamic Memory Test ============\n" );
+    pstMemory = kGetDynamicMemoryManager();
+    
+    for( i = 0 ; i < pstMemory->iMaxLevelCount ; i++ )
+    {
+        kPrintf( "Block List [%d] Test Start\n", i );
+        kPrintf( "Allocation And Compare: ");
+        
+        // ��� ������ �Ҵ� �޾Ƽ� ���� ä�� �� �˻�
+        for( j = 0 ; j < ( pstMemory->iBlockCountOfSmallestBlock >> i ) ; j++ )
+        {
+            pqwBuffer = kAllocateMemory( DYNAMICMEMORY_MIN_SIZE << i );
+            if( pqwBuffer == NULL )
+            {
+                kPrintf( "\nAllocation Fail\n" );
+                return ;
+            }
+
+            // ���� ä�� �� �ٽ� �˻�
+            for( k = 0 ; k < ( DYNAMICMEMORY_MIN_SIZE << i ) / 8 ; k++ )
+            {
+                pqwBuffer[ k ] = k;
+            }
+            
+            for( k = 0 ; k < ( DYNAMICMEMORY_MIN_SIZE << i ) / 8 ; k++ )
+            {
+                if( pqwBuffer[ k ] != k )
+                {
+                    kPrintf( "\nCompare Fail\n" );
+                    return ;
+                }
+            }
+            // ���� ������ . ���� ǥ��
+            kPrintf( "." );
+        }
+        
+        kPrintf( "\nFree: ");
+        // �Ҵ� ���� ������ ��� ��ȯ
+        for( j = 0 ; j < ( pstMemory->iBlockCountOfSmallestBlock >> i ) ; j++ )
+        {
+            if( kFreeMemory( ( void * ) ( pstMemory->qwStartAddress + 
+                         ( DYNAMICMEMORY_MIN_SIZE << i ) * j ) ) == FALSE )
+            {
+                kPrintf( "\nFree Fail\n" );
+                return ;
+            }
+            // ���� ������ . ���� ǥ��
+            kPrintf( "." );
+        }
+        kPrintf( "\n" );
+    }
+    kPrintf( "Test Complete~!!!\n" );
+}
+
+/**
+ *  ���Ƿ� �޸𸮸� �Ҵ��ϰ� �����ϴ� ���� �ݺ��ϴ� �½�ũ
+ */
+static void kRandomAllocationTask( void )
+{
+    TCB* pstTask;
+    QWORD qwMemorySize;
+    char vcBuffer[ 200 ];
+    BYTE* pbAllocationBuffer;
+    int i, j;
+    int iY;
+    
+    pstTask = kGetRunningTask();
+    iY = ( pstTask->stLink.qwID ) % 15 + 9;
+
+    for( j = 0 ; j < 10 ; j++ )
+    {
+        // 1KB ~ 32M���� �Ҵ��ϵ��� ��
+        do
+        {
+            qwMemorySize = ( ( kRandom() % ( 32 * 1024 ) ) + 1 ) * 1024;
+            pbAllocationBuffer = kAllocateMemory( qwMemorySize );
+
+            // ���� ���۸� �Ҵ� ���� ���ϸ� �ٸ� �½�ũ�� �޸𸮸� ����ϰ� 
+            // ���� �� �����Ƿ� ��� ����� �� �ٽ� �õ�
+            if( pbAllocationBuffer == 0 )
+            {
+                kSleep( 1 );
+            }
+        } while( pbAllocationBuffer == 0 );
+            
+        kSPrintf( vcBuffer, "|Address: [0x%Q] Size: [0x%Q] Allocation Success", 
+                  pbAllocationBuffer, qwMemorySize );
+        // �ڽ��� ID�� Y ��ǥ�� �Ͽ� �����͸� ���
+        kPrintStringXY( 20, iY, vcBuffer );
+        kSleep( 200 );
+        
+        // ���۸� ������ ������ ������ �����͸� �Ȱ��� ä�� 
+        kSPrintf( vcBuffer, "|Address: [0x%Q] Size: [0x%Q] Data Write...     ", 
+                  pbAllocationBuffer, qwMemorySize );
+        kPrintStringXY( 20, iY, vcBuffer );
+        for( i = 0 ; i < qwMemorySize / 2 ; i++ )
+        {
+            pbAllocationBuffer[ i ] = kRandom() & 0xFF;
+            pbAllocationBuffer[ i + ( qwMemorySize / 2 ) ] = pbAllocationBuffer[ i ];
+        }
+        kSleep( 200 );
+        
+        // ä�� �����Ͱ� ���������� �ٽ� Ȯ��
+        kSPrintf( vcBuffer, "|Address: [0x%Q] Size: [0x%Q] Data Verify...   ", 
+                  pbAllocationBuffer, qwMemorySize );
+        kPrintStringXY( 20, iY, vcBuffer );
+        for( i = 0 ; i < qwMemorySize / 2 ; i++ )
+        {
+            if( pbAllocationBuffer[ i ] != pbAllocationBuffer[ i + ( qwMemorySize / 2 ) ] )
+            {
+                kPrintf( "Task ID[0x%Q] Verify Fail\n", pstTask->stLink.qwID );
+                kExitTask();
+            }
+        }
+        kFreeMemory( pbAllocationBuffer );
+        kSleep( 200 );
+    }
+    
+    kExitTask();
+}
+
+/**
+ *  �½�ũ�� ���� �� �����Ͽ� ������ �޸𸮸� �Ҵ��ϰ� �����ϴ� ���� �ݺ��ϴ� �׽�Ʈ
+ */
+static void kTestRandomAllocation( const char* pcParameterBuffer )
+{
+    int i;
+    
+    for( i = 0 ; i < 1000 ; i++ )
+    {
+        kCreateTask( TASK_FLAGS_LOWEST | TASK_FLAGS_THREAD, 0, 0, ( QWORD ) kRandomAllocationTask );
+    }
+}
+
+
+static void kShowHDDInformation( const char* pcParameterBuffer )
+{
+    HDDINFORMATION stHDD;
+    char vcBuffer[ 100 ];
+    
+    // �ϵ� ��ũ�� ������ ����
+    if( kReadHDDInformation( TRUE, TRUE, &stHDD ) == FALSE )
+    {
+        kPrintf( "HDD Information Read Fail\n" );
+        return ;
+    }        
+    
+    kPrintf( "============ Primary Master HDD Information ============\n" );
+    
+    // �� ��ȣ ���
+    kMemCpy( vcBuffer, stHDD.vwModelNumber, sizeof( stHDD.vwModelNumber ) );
+    vcBuffer[ sizeof( stHDD.vwModelNumber ) - 1 ] = '\0';
+    kPrintf( "Model Number:\t %s\n", vcBuffer );
+    
+    // �ø��� ��ȣ ���
+    kMemCpy( vcBuffer, stHDD.vwSerialNumber, sizeof( stHDD.vwSerialNumber ) );
+    vcBuffer[ sizeof( stHDD.vwSerialNumber ) - 1 ] = '\0';
+    kPrintf( "Serial Number:\t %s\n", vcBuffer );
+
+    // ���, �Ǹ���, �Ǹ��� �� ���� ���� ���
+    kPrintf( "Head Count:\t %d\n", stHDD.wNumberOfHead );
+    kPrintf( "Cylinder Count:\t %d\n", stHDD.wNumberOfCylinder );
+    kPrintf( "Sector Count:\t %d\n", stHDD.wNumberOfSectorPerCylinder );
+    
+    // �� ���� �� ���
+    kPrintf( "Total Sector:\t %d Sector, %dMB\n", stHDD.dwTotalSectors, 
+            stHDD.dwTotalSectors / 2 / 1024 );
+}
+
+/**
+ *  �ϵ� ��ũ�� �Ķ���ͷ� �Ѿ�� LBA ��巹������ ���� �� ��ŭ ����
+ */
+static void kReadSector( const char* pcParameterBuffer )
+{
+    PARAMETERLIST stList;
+    char vcLBA[ 50 ], vcSectorCount[ 50 ];
+    DWORD dwLBA;
+    int iSectorCount;
+    char* pcBuffer;
+    int i, j;
+    BYTE bData;
+    BOOL bExit = FALSE;
+    
+    // �Ķ���� ����Ʈ�� �ʱ�ȭ�Ͽ� LBA ��巹���� ���� �� ����
+    kInitializeParameter( &stList, pcParameterBuffer );
+    if( ( kGetNextParameter( &stList, vcLBA ) == 0 ) ||
+        ( kGetNextParameter( &stList, vcSectorCount ) == 0 ) )
+    {
+        kPrintf( "ex) readsector 0(LBA) 10(count)\n" );
+        return ;
+    }
+    dwLBA = kAToI( vcLBA, 10 );
+    iSectorCount = kAToI( vcSectorCount, 10 );
+    
+    // ���� ����ŭ �޸𸮸� �Ҵ� �޾� �б� ����
+    pcBuffer = kAllocateMemory( iSectorCount * 512 );
+    if( kReadHDDSector( TRUE, TRUE, dwLBA, iSectorCount, pcBuffer ) == iSectorCount )
+    {
+        kPrintf( "LBA [%d], [%d] Sector Read Success~!!", dwLBA, iSectorCount );
+        // ������ ������ ������ ���
+        for( j = 0 ; j < iSectorCount ; j++ )
+        {
+            for( i = 0 ; i < 512 ; i++ )
+            {
+                if( !( ( j == 0 ) && ( i == 0 ) ) && ( ( i % 256 ) == 0 ) )
+                {
+                    kPrintf( "\nPress any key to continue... ('q' is exit) : " );
+                    if( kGetCh() == 'q' )
+                    {
+                        bExit = TRUE;
+                        break;
+                    }
+                }                
+
+                if( ( i % 16 ) == 0 )
+                {
+                    kPrintf( "\n[LBA:%d, Offset:%d]\t| ", dwLBA + j, i ); 
+                }
+
+                // ��� �� �ڸ��� ǥ���Ϸ��� 16���� ���� ��� 0�� �߰�����
+                bData = pcBuffer[ j * 512 + i ] & 0xFF;
+                if( bData < 16 )
+                {
+                    kPrintf( "0" );
+                }
+                kPrintf( "%X ", bData );
+            }
+            
+            if( bExit == TRUE )
+            {
+                break;
+            }
+        }
+        kPrintf( "\n" );
+    }
+    else
+    {
+        kPrintf( "Read Fail\n" );
+    }
+    
+    kFreeMemory( pcBuffer );
+}
+
+/**
+ *  �ϵ� ��ũ�� �Ķ���ͷ� �Ѿ�� LBA ��巹������ ���� �� ��ŭ ��
+ */
+static void kWriteSector( const char* pcParameterBuffer )
+{
+    PARAMETERLIST stList;
+    char vcLBA[ 50 ], vcSectorCount[ 50 ];
+    DWORD dwLBA;
+    int iSectorCount;
+    char* pcBuffer;
+    int i, j;
+    BOOL bExit = FALSE;
+    BYTE bData;
+    static DWORD s_dwWriteCount = 0;
+
+    // �Ķ���� ����Ʈ�� �ʱ�ȭ�Ͽ� LBA ��巹���� ���� �� ����
+    kInitializeParameter( &stList, pcParameterBuffer );
+    if( ( kGetNextParameter( &stList, vcLBA ) == 0 ) ||
+        ( kGetNextParameter( &stList, vcSectorCount ) == 0 ) )
+    {
+        kPrintf( "ex) writesector 0(LBA) 10(count)\n" );
+        return ;
+    }
+    dwLBA = kAToI( vcLBA, 10 );
+    iSectorCount = kAToI( vcSectorCount, 10 );
+
+    s_dwWriteCount++;
+    
+    // ���۸� �Ҵ� �޾� �����͸� ä��. 
+    // ������ 4 ����Ʈ�� LBA ��巹���� 4 ����Ʈ�� ���Ⱑ ����� Ƚ���� ����
+    pcBuffer = kAllocateMemory( iSectorCount * 512 );
+    for( j = 0 ; j < iSectorCount ; j++ )
+    {
+        for( i = 0 ; i < 512 ; i += 8 )
+        {
+            *( DWORD* ) &( pcBuffer[ j * 512 + i ] ) = dwLBA + j;
+            *( DWORD* ) &( pcBuffer[ j * 512 + i + 4 ] ) = s_dwWriteCount;            
+        }
+    }
+    
+    // ���� ����
+    if( kWriteHDDSector( TRUE, TRUE, dwLBA, iSectorCount, pcBuffer ) != iSectorCount )
+    {
+        kPrintf( "Write Fail\n" );
+        return ;
+    }
+    kPrintf( "LBA [%d], [%d] Sector Write Success~!!", dwLBA, iSectorCount );
+
+    // ������ ������ ������ ���
+    for( j = 0 ; j < iSectorCount ; j++ )
+    {
+        for( i = 0 ; i < 512 ; i++ )
+        {
+            if( !( ( j == 0 ) && ( i == 0 ) ) && ( ( i % 256 ) == 0 ) )
+            {
+                kPrintf( "\nPress any key to continue... ('q' is exit) : " );
+                if( kGetCh() == 'q' )
+                {
+                    bExit = TRUE;
+                    break;
+                }
+            }                
+
+            if( ( i % 16 ) == 0 )
+            {
+                kPrintf( "\n[LBA:%d, Offset:%d]\t| ", dwLBA + j, i ); 
+            }
+
+            // ��� �� �ڸ��� ǥ���Ϸ��� 16���� ���� ��� 0�� �߰�����
+            bData = pcBuffer[ j * 512 + i ] & 0xFF;
+            if( bData < 16 )
+            {
+                kPrintf( "0" );
+            }
+            kPrintf( "%X ", bData );
+        }
+        
+        if( bExit == TRUE )
+        {
+            break;
+        }
+    }
+    kPrintf( "\n" );    
+    kFreeMemory( pcBuffer );    
 }

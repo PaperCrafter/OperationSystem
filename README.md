@@ -48,6 +48,23 @@ OperationSystem
 >완료
 ```
 
+### assignment4
+```
+1.
+>완료
+2.
+>완료
+```
+
+### assignment5
+
+```
+1. 하드디스크 이미지 생성
+> qemu-img create HDD.img 20M
+2. 하드디스크 추가
+> qemu-system-x86_64 -L . -m 64 -fda ./Disk.img -hda ./HDD.img -boot a -localtime -M pc
+```
+
 ### Trouble Shooting guide 
 ```
 1. 부트로더 크기가 더 필요한 경우 2번 부트로더의 SECTORNUMBER:	db	0x04 

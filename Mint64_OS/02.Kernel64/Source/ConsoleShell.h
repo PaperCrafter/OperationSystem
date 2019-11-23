@@ -90,5 +90,13 @@ static void kCreateThreadTask( void );
 static void kTestThread( const char* pcParameterBuffer );
 static void kShowMatrix( const char* pcParameterBuffer );
 static void kShowData( void );
+static void kTestPIE( const char* pcParameterBuffer );
+static void kShowDyanmicMemoryInformation( const char* pcParameterBuffer );
+static void kTestSequentialAllocation( const char* pcParameterBuffer );
+static void kTestRandomAllocation( const char* pcParameterBuffer );
+static void kRandomAllocationTask( void );
+static void kShowHDDInformation( const char* pcParameterBuffer );
+static void kReadSector( const char* pcParameterBuffer );
+static void kWriteSector( const char* pcParameterBuffer );
 
 #endif /*__CONSOLESHELL_H__*/

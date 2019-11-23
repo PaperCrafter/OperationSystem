@@ -46,6 +46,8 @@ void kKeyboardHandler( int iVectorNumber );
 void kPageFaultExceptionHandler( int iVectorNumber, QWORD qwErrorCode );
 void kSetPageEntryData(PTENTRY* pstEntry, DWORD dwUpperBaseAddress, DWORD dwLowerBaseAddress, DWORD dwLowerFlags, DWORD dwUpperFlags);
 void kTimerHandler( int iVectorNumber );
+void kDeviceNotAvailableHandler( int iVectorNumber );
+void kHDDHandler( int iVectorNumber );
 
 static int timer;
 #endif /*__INTERRUPTHANDLER_H__*/

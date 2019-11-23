@@ -5,7 +5,8 @@
 #include "Utility.h"
 #include "Task.h"
 #include "Descriptor.h"
-
+#include "AssemblyUtility.h"
+#include "HardDisk.h"
 
 static inline void invlpg(int* m)
 {
@@ -177,4 +178,99 @@ void kTimerHandler( int iVectorNumber )
     if( kIsProcessorTimeExpired() == TRUE){
         kScheduleInInterrupt();
     }
+}
+
+/**
+ *  Device Not Available ������ �ڵ鷯
+ */
+void kDeviceNotAvailableHandler( int iVectorNumber )
+{
+    TCB* pstFPUTask, * pstCurrentTask;
+    QWORD qwLastFPUTaskID;
+
+    //=========================================================================
+    // FPU ���ܰ� �߻������� �˸����� �޽����� ����ϴ� �κ�
+    char vcBuffer[] = "[EXC:  , ]";
+    static int g_iFPUInterruptCount = 0;
+
+    // ���� ���͸� ȭ�� ������ ���� 2�ڸ� ������ ���
+    vcBuffer[ 5 ] = '0' + iVectorNumber / 10;
+    vcBuffer[ 6 ] = '0' + iVectorNumber % 10;
+    // �߻��� Ƚ�� ���
+    vcBuffer[ 8 ] = '0' + g_iFPUInterruptCount;
+    g_iFPUInterruptCount = ( g_iFPUInterruptCount + 1 ) % 10;
+    kPrintStringXY( 0, 0, vcBuffer );    
+    //=========================================================================
+    
+    // CR0 ��Ʈ�� ���������� TS ��Ʈ�� 0���� ����
+    kClearTS();
+
+    // ������ FPU�� ����� �½�ũ�� �ִ��� Ȯ���Ͽ�, �ִٸ� FPU�� ���¸� �½�ũ�� ����
+    qwLastFPUTaskID = kGetLastFPUUsedTaskID();
+    pstCurrentTask = kGetRunningTask();
+    
+    // ������ FPU�� ����� ���� �ڽ��̸� �ƹ��͵� �� ��
+    if( qwLastFPUTaskID == pstCurrentTask->stLink.qwID )
+    {
+        return ;
+    }
+    // FPU�� ����� �½�ũ�� ������ FPU ���¸� ����
+    else if( qwLastFPUTaskID != TASK_INVALIDID )
+    {
+        pstFPUTask = kGetTCBInTCBPool( GETTCBOFFSET( qwLastFPUTaskID ) );
+        if( ( pstFPUTask != NULL ) && ( pstFPUTask->stLink.qwID == qwLastFPUTaskID ) )
+        {
+            kSaveFPUContext( pstFPUTask->vqwFPUContext );
+        }
+    }
+    
+    // ���� �½�ũ�� FPU�� ����� ���� �ִ� �� Ȯ���Ͽ� FPU�� ����� ���� ���ٸ� 
+    // �ʱ�ȭ�ϰ�, ��������� �ִٸ� ����� FPU ���ؽ�Ʈ�� ����
+    if( pstCurrentTask->bFPUUsed == FALSE )
+    {
+        kInitializeFPU();
+        pstCurrentTask->bFPUUsed = TRUE;
+    }
+    else
+    {
+        kLoadFPUContext( pstCurrentTask->vqwFPUContext );
+    }
+    
+    // FPU�� ����� �½�ũ ID�� ���� �½�ũ�� ����
+    kSetLastFPUUsedTaskID( pstCurrentTask->stLink.qwID );
+}
+
+void kHDDHandler( int iVectorNumber )
+{
+    char vcBuffer[] = "[INT:  , ]";
+    static int g_iHDDInterruptCount = 0;
+    BYTE bTemp;
+
+    //=========================================================================
+    // ���ͷ�Ʈ�� �߻������� �˸����� �޽����� ����ϴ� �κ�
+    // ���ͷ�Ʈ ���͸� ȭ�� ���� ���� 2�ڸ� ������ ���
+    vcBuffer[ 5 ] = '0' + iVectorNumber / 10;
+    vcBuffer[ 6 ] = '0' + iVectorNumber % 10;
+    // �߻��� Ƚ�� ���
+    vcBuffer[ 8 ] = '0' + g_iHDDInterruptCount;
+    g_iHDDInterruptCount = ( g_iHDDInterruptCount + 1 ) % 10;
+    // ���� ���� �ִ� �޽����� ��ġ�� �ʵ��� (10, 0)�� ���
+    kPrintStringXY( 10, 0, vcBuffer );
+    //=========================================================================
+
+    // ù ��° PATA ��Ʈ�� ���ͷ�Ʈ ����(IRQ 14) ó��
+    if( iVectorNumber - PIC_IRQSTARTVECTOR == 14 )
+    {
+        // ù ��° PATA ��Ʈ�� ���ͷ�Ʈ �߻� ���θ� TRUE�� ����
+        kSetHDDInterruptFlag( TRUE, TRUE );
+    }
+    // �� ��° PATA ��Ʈ�� ���ͷ�Ʈ ����(IRQ 15) ó��
+    else
+    {
+        // �� ��° PATA ��Ʈ�� ���ͷ�Ʈ �߻� ���θ� TRUE�� ����
+        kSetHDDInterruptFlag( FALSE, TRUE );
+    }
+    
+    // EOI ����
+    kSendEOIToPIC( iVectorNumber - PIC_IRQSTARTVECTOR );
 }
