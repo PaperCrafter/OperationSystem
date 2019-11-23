@@ -8,6 +8,7 @@
 #include "PIT.h"
 #include "DynamicMemory.h"
 #include "HardDisk.h"
+#include "FileSystem.h"
 
 void Main( void )
 {	
@@ -101,9 +102,22 @@ void Main( void )
     kSetCursor( 45, iCursorY );
     kPrintf( "Pass\n" );
 
-    // �ϵ� ��ũ�� �ʱ�ȭ
-    kPrintf( "HDD Initialize..............................[    ]" );
-    if( kInitializeHDD() == TRUE )
+    // // �ϵ� ��ũ�� �ʱ�ȭ
+    // kPrintf( "HDD Initialize..............................[    ]" );
+    // if( kInitializeHDD() == TRUE )
+    // {
+    //     kSetCursor( 45, iCursorY++ );
+    //     kPrintf( "Pass\n" );
+    // }
+    // else
+    // {
+    //     kSetCursor( 45, iCursorY++ );
+    //     kPrintf( "Fail\n" );
+    // }
+
+    // ���� �ý����� �ʱ�ȭ
+    kPrintf( "File System Initialize......................[    ]" );
+    if( kInitializeFileSystem() == TRUE )
     {
         kSetCursor( 45, iCursorY++ );
         kPrintf( "Pass\n" );
@@ -113,6 +127,7 @@ void Main( void )
         kSetCursor( 45, iCursorY++ );
         kPrintf( "Fail\n" );
     }
+    
 
     //kPrintString(0, 18, "Write to 0x1ff000 [  ]");
     //writeTo(0x1ff000, 18);
