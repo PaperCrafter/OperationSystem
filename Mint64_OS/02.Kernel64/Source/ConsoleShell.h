@@ -1,7 +1,7 @@
 /**
  *  file    ConsoleShell.h
  *  date    2009/01/31
- *  author  kkamagui 
+ *  author  kkamagui
  *          Copyright(c)2008 All rights reserved by kkamagui
  *  brief   �ܼ� �п� ���õ� ��� ����
  */
@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 #define CONSOLESHELL_MAXCOMMANDBUFFERCOUNT  300
 #define CONSOLESHELL_PROMPTMESSAGE          "MINT64>"
+#define CONSOLESHELL_ID "ID>"
+#define CONSOLESHELL_PASSWORD "PASSWORD>"
 
 // ���ڿ� �����͸� �Ķ���ͷ� �޴� �Լ� ������ Ÿ�� ����
 typedef void ( * CommandFunction ) ( const char* pcParameter );
@@ -90,5 +92,31 @@ static void kCreateThreadTask( void );
 static void kTestThread( const char* pcParameterBuffer );
 static void kShowMatrix( const char* pcParameterBuffer );
 static void kShowData( void );
+static void kTestPIE( const char* pcParameterBuffer );
+static void kShowDyanmicMemoryInformation( const char* pcParameterBuffer );
+static void kTestSequentialAllocation( const char* pcParameterBuffer );
+static void kTestRandomAllocation( const char* pcParameterBuffer );
+static void kRandomAllocationTask( void );
+static void kShowHDDInformation( const char* pcParameterBuffer );
+static void kReadSector( const char* pcParameterBuffer );
+static void kWriteSector( const char* pcParameterBuffer );
+static void kMountHDD( const char* pcParameterBuffer );
+static void kFormatHDD( const char* pcParameterBuffer );
+static void kShowFileSystemInformation( const char* pcParameterBuffer );
+static void kCreateFileInRootDirectory( const char* pcParameterBuffer );
+static void kDeleteFileInRootDirectory( const char* pcParameterBuffer );
+static void kShowRootDirectory( const char* pcParameterBuffer );
+static void kWriteDataToFile( const char* pcParameterBuffer );
+static void kReadDataFromFile( const char* pcParameterBuffer );
+static void kTestFileIO( const char* pcParameterBuffer );
+static void kFlushCache( const char* pcParameterBuffer );
+static void kTestPerformance( const char* pcParameterBuffer );
+//hw추가구현
+static void kSaveUser(void);
+static void kCreateId(void);
+static void kChangePass(void);
+static void kChangeAuthority( const char* pcParameterBuffer );
+static void kChangeOwnerID( const char* pcParameterBuffer );
+
 
 #endif /*__CONSOLESHELL_H__*/

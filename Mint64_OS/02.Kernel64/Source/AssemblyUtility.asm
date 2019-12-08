@@ -3,10 +3,12 @@
 
 SECTION .text     
 
-global kInPortByte, kOutPortByte, kLoadGDTR, kLoadTR, kLoadIDTR
+global kInPortByte, kOutPortByte, kInPortWord, kOutPortWord
+global kLoadGDTR, kLoadTR, kLoadIDTR
 global kEnableInterrupt, kDisableInterrupt, kReadRFLAGS
 global kReadTSC
 global kSwitchContext, kHlt, kTestAndSet
+global kInitializeFPU, kSaveFPUContext, kLoadFPUContext, kSetTS, kClearTS
 
 kHlt:
     hlt
@@ -35,6 +37,35 @@ kOutPortByte:
     pop rax         
     pop rdx
     ret             
+
+; ��Ʈ�κ��� 2����Ʈ�� ����
+;   PARAM: ��Ʈ ��ȣ
+kInPortWord:
+    push rdx        ; �Լ����� �ӽ÷� ����ϴ� �������͸� ���ÿ� ����
+                    ; �Լ��� ������ �κп��� ���ÿ� ���Ե� ���� ���� ����
+    
+    mov rdx, rdi    ; RDX �������Ϳ� �Ķ���� 1(��Ʈ ��ȣ)�� ����
+    mov rax, 0      ; RAX �������͸� �ʱ�ȭ
+    in ax, dx       ; DX �������Ϳ� ����� ��Ʈ ��巹������ �� ����Ʈ�� �о�
+                    ; AX �������Ϳ� ����, AX �������ʹ� �Լ��� ��ȯ ������ ����
+    
+    pop rdx         ; �Լ����� ����� ���� �������͸� ����
+    ret             ; �Լ��� ȣ���� ���� �ڵ��� ��ġ�� ����
+    
+; ��Ʈ�� 2����Ʈ�� ��
+;   PARAM: ��Ʈ ��ȣ, ������
+kOutPortWord:
+    push rdx        ; �Լ����� �ӽ÷� ����ϴ� �������͸� ���ÿ� ����
+    push rax        ; �Լ��� ������ �κп��� ���ÿ� ���Ե� ���� ���� ����
+    
+    mov rdx, rdi    ; RDX �������Ϳ� �Ķ���� 1(��Ʈ ��ȣ)�� ����
+    mov rax, rsi    ; RAX �������Ϳ� �Ķ���� 2(������)�� ����    
+    out dx, ax      ; DX �������Ϳ� ����� ��Ʈ ��巹���� AX �������Ϳ� �����
+                    ; �� ����Ʈ�� ��
+    
+    pop rax         ; �Լ����� ����� ���� �������͸� ����
+    pop rdx
+    ret             ; �Լ��� ȣ���� ���� �ڵ��� ��ġ�� ����
 
 
 kLoadGDTR:
@@ -212,3 +243,44 @@ kTestAndSet:
     mov rax, 0x01
     ret
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;   FPU ���� ��������� �Լ�
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
+; FPU�� �ʱ�ȭ
+;   PAPAM: ����
+kInitializeFPU:
+    finit               ; FPU �ʱ�ȭ�� ����
+    ret
+    
+; FPU ���� �������͸� ���ؽ�Ʈ ���ۿ� ����
+;   PARAM: Buffer Address
+kSaveFPUContext:
+    fxsave  [ rdi ]     ; ù ��° �Ķ���ͷ� ���޵� ���ۿ� FPU �������͸� ����
+    ret
+    
+; FPU ���� �������͸� ���ؽ�Ʈ ���ۿ��� ����
+;   PARAM: Buffer Address
+kLoadFPUContext:
+    fxrstor [ rdi ]     ; ù ��° �Ķ���ͷ� ���޵� ���ۿ��� FPU �������͸� ����
+    ret
+
+; CR0 ��Ʈ�� ���������� TS ��Ʈ�� 1�� ����
+;   PARAM: ����
+kSetTS:
+    push rax            ; ���ÿ� RAX ���������� ���� ����
+
+    mov rax, cr0        ; CR0 ��Ʈ�� ���������� ���� RAX �������ͷ� ����
+    or rax, 0x08        ; TS ��Ʈ(��Ʈ 7)�� 1�� ����
+    mov cr0, rax        ; TS ��Ʈ�� 1�� ������ ���� CR0 ��Ʈ�� �������ͷ� ����
+
+    pop rax             ; ���ÿ��� RAX ���������� ���� ����
+    ret
+    
+; CR0 ��Ʈ�� ���������� TS ��Ʈ�� 0���� ����
+;   PARAM: ����
+kClearTS:
+    clts                ; CR0 ��Ʈ�� �������Ϳ��� TS ��Ʈ�� 0���� ����
+    ret    
